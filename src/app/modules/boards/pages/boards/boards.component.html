@@ -1,68 +1,131 @@
-<div class="container mx-auto flex mt-10">
-  <div class="w-1/5 mr-4">
-    <ul class="flex flex-col font-medium text-gray-700 mb-5">
-      <li>
-        <a class="block bg-sky-100 rounded py-1 px-3 text-sky-700"
-          ><fa-icon [icon]="faTrello"></fa-icon> Boards</a
+<div class="min-h-screen bg-gray-50">
+  <div class="container mx-auto flex flex-col lg:flex-row pt-6 pb-10 px-4 sm:px-6 lg:px-8">
+    <aside class="w-full lg:w-1/5 mb-6 lg:mb-0 lg:mr-6 lg:sticky lg:top-6 lg:self-start">
+      <nav class="bg-white rounded-lg shadow-sm p-4">
+        <ul class="flex flex-col gap-1">
+          <li>
+            <a
+              class="flex items-center gap-2 bg-sky-100 text-sky-700 rounded-md py-2 px-3 text-sm font-medium"
+              [routerLink]="['/app/boards']"
+            >
+              <fa-icon [icon]="faTrello"></fa-icon>
+              Boards
+            </a>
+          </li>
+        </ul>
+        <hr class="my-3 border-gray-200" />
+        <button
+          (click)="openCreateBoardDialog()"
+          class="flex items-center gap-2 text-gray-600 hover:text-sky-700 hover:bg-sky-50 rounded-md py-2 px-3 text-sm font-medium w-full transition-colors"
         >
-      </li>
-      <li>
-        <a class="block py-1 px-3"
-          ><fa-icon [icon]="faBox"></fa-icon> Templates</a
-        >
-      </li>
-      <li>
-        <a class="block py-1 px-3"
-          ><fa-icon [icon]="faWaveSquare"></fa-icon> Home</a
-        >
-      </li>
-    </ul>
-
-    <cdk-accordion>
-      <cdk-accordion-item #accordionMenu="cdkAccordionItem">
-        <button class="w-full py-1 px-2 flex justify-between items-center" type="button" (click)="accordionMenu.toggle()">
-          My workspace
-          <fa-icon [icon]="accordionMenu.expanded ? faAngleUp : faAngleDown"></fa-icon>
+          <fa-icon [icon]="faPlus" class="text-xs"></fa-icon>
+          Create board
         </button>
-        <div [style.display]="accordionMenu.expanded ? '' : 'none' ">
-          <ul class="ml-2 flex flex-col text-sm text-gray-700">
-            <li>
-              <a class="block py-1 px-3"
-                ><fa-icon [icon]="faTrello"></fa-icon> Boards</a
-              >
-            </li>
-            <li>
-              <a class="block py-1 px-3"
-                ><fa-icon [icon]="faHeart"></fa-icon> Highlights</a
-              >
-            </li>
-            <li>
-              <a class="block py-1 px-3"
-                ><fa-icon [icon]="faBorderAll"></fa-icon> Views</a
-              >
-            </li>
-            <li>
-              <a class="block py-1 px-3"
-                ><fa-icon [icon]="faUsers"></fa-icon> Members</a
-              >
-            </li>
-            <li>
-              <a class="block py-1 px-3"
-                ><fa-icon [icon]="faGear"></fa-icon> Settings</a
-              >
-            </li>
-          </ul>
+      </nav>
+    </aside>
+
+    <main class="flex-1 min-w-0">
+      <div class="mb-6">
+        <div class="flex items-center gap-2 mb-4">
+          <fa-icon [icon]="faSearch" class="text-gray-400 text-sm"></fa-icon>
+          <input
+            #searchInput
+            type="text"
+            placeholder="Search boards..."
+            class="w-full sm:w-72 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
+            (input)="onSearch(searchInput.value)"
+          />
         </div>
-      </cdk-accordion-item>
-    </cdk-accordion>
-  </div>
-  <div class="w-full">
-    <h1 class="text-lg font-bold mb-4"><fa-icon [icon]="faClock"></fa-icon> Recently viewed</h1>
-    <div class="grid grid-cols-4 gap-4">
-      <a routerLink="/app/boards/1" class="w-full bg-sky-700 px-4 py-2 rounded text-white font-bold h-24">Board 1</a>
-      <a routerLink="/app/boards/1" class="w-full bg-green-700 px-4 py-2 rounded text-white font-bold h-24">Board 1</a>
-      <a routerLink="/app/boards/1" class="w-full bg-amber-700 px-4 py-2 rounded text-white font-bold h-24">Board 1</a>
-      <a routerLink="/app/boards/1" class="w-full bg-indigo-700 px-4 py-2 rounded text-white font-bold h-24">Board 1</a>
-    </div>
+      </div>
+
+      <app-skeleton-loader *ngIf="loading" [count]="4"></app-skeleton-loader>
+
+      <ng-container *ngIf="!loading">
+        <section *ngIf="!searchTerm" class="mb-8">
+          <h2 class="flex items-center gap-2 text-base font-semibold text-gray-800 mb-3">
+            <fa-icon [icon]="faClock" class="text-gray-500 text-sm"></fa-icon>
+            Recently viewed
+          </h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <a
+              *ngFor="let board of recentBoards"
+              [routerLink]="['/app/boards', board.id]"
+              class="block relative rounded-lg overflow-hidden shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
+              [ngClass]="{
+                'bg-sky-700': board.backgroundColor === 'sky',
+                'bg-green-700': board.backgroundColor === 'green',
+                'bg-violet-700': board.backgroundColor === 'violet',
+                'bg-amber-600': board.backgroundColor === 'yellow'
+              }"
+            >
+              <div class="px-4 py-3 h-24 flex flex-col justify-between">
+                <span class="text-white font-semibold text-sm leading-tight line-clamp-2">
+                  {{ board.title }}
+                </span>
+                <span class="text-white/70 text-xs">
+                  {{ board.updatedAt | date:'shortDate' }}
+                </span>
+              </div>
+              <button
+                (click)="openUpdateBoardDialog(board); $event.preventDefault(); $event.stopPropagation()"
+                class="absolute top-2 right-2 bg-white/20 hover:bg-white/40 text-white rounded-full w-7 h-7 flex items-center justify-center transition-colors focus:opacity-100"
+                [attr.aria-label]="'Update ' + board.title"
+                type="button"
+              >
+                <fa-icon [icon]="faPen" class="text-xs"></fa-icon>
+              </button>
+            </a>
+          </div>
+        </section>
+
+        <section>
+          <h2 *ngIf="!searchTerm" class="text-base font-semibold text-gray-800 mb-3">
+            All boards
+          </h2>
+          <h2 *ngIf="searchTerm" class="text-base font-semibold text-gray-800 mb-3">
+            Search results
+            <span class="text-sm font-normal text-gray-500">({{ filteredBoards.length }} found)</span>
+          </h2>
+
+          <div *ngIf="filteredBoards.length === 0 && searchTerm" class="text-center py-12">
+            <fa-icon [icon]="faSearch" class="text-4xl text-gray-300 mb-3"></fa-icon>
+            <p class="text-gray-500 text-sm">No boards match "{{ searchTerm }}"</p>
+          </div>
+
+          <div *ngIf="filteredBoards.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <ng-container *ngFor="let board of filteredBoards">
+              <a
+                [routerLink]="['/app/boards', board.id]"
+                class="block relative rounded-lg overflow-hidden shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
+                [ngClass]="{
+                  'bg-sky-700': board.backgroundColor === 'sky',
+                  'bg-green-700': board.backgroundColor === 'green',
+                  'bg-violet-700': board.backgroundColor === 'violet',
+                  'bg-amber-600': board.backgroundColor === 'yellow'
+                }"
+              >
+                <div class="px-4 py-3 h-24 flex flex-col justify-between">
+                  <span
+                    class="text-white font-semibold text-sm leading-tight line-clamp-2"
+                    [innerHTML]="highlightTitle(board.title)"
+                  ></span>
+                  <span class="text-white/70 text-xs">
+                    {{ board.updatedAt | date:'shortDate' }}
+                  </span>
+                </div>
+                <button
+                  (click)="openUpdateBoardDialog(board); $event.preventDefault(); $event.stopPropagation()"
+                  class="absolute top-2 right-2 bg-white/20 hover:bg-white/40 text-white rounded-full w-7 h-7 flex items-center justify-center transition-colors focus:opacity-100"
+                  [attr.aria-label]="'Update ' + board.title"
+                  type="button"
+                >
+                  <fa-icon [icon]="faPen" class="text-xs"></fa-icon>
+                </button>
+              </a>
+            </ng-container>
+          </div>
+        </section>
+      </ng-container>
+    </main>
   </div>
 </div>
