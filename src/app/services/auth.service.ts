@@ -16,6 +16,7 @@ import {
 import { environment } from '@environments/environment';
 import { switchMap, tap } from 'rxjs/operators';
 import { TokenService } from '@services/token.service';
+import { RecentBoardsService } from '@services/recent-boards.service';
 import { User } from '@models/user.model';
 import { BehaviorSubject } from 'rxjs';
 import { checkToken } from '@interceptors/token.interceptor';
@@ -30,6 +31,7 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private tokenService: TokenService,
+    private recentBoardsService: RecentBoardsService,
   ) {}
 
   getDataUser() {
@@ -45,6 +47,7 @@ export class AuthService {
         tap((response) => {
           this.tokenService.saveToken(response.access_token);
           this.tokenService.saveRefreshToken(response.refresh_token);
+          this.recentBoardsService.clearStack();
         }),
       );
   }

@@ -16,23 +16,18 @@ import { faTrello as faTrelloBrand } from '@fortawesome/free-brands-svg-icons';
 import { AuthService } from '@services/auth.service';
 import { TokenService } from '@services/token.service';
 import { BoardsService } from '@services/boards.service';
-import {
-  RecentBoardsService,
-  RecentBoardEntry,
-} from '@services/recent-boards.service';
+import { RecentBoardsService, RecentBoardEntry } from '@services/recent-boards.service';
 import { CreateBoardDialogComponent } from '@boards/components/create-board-dialog/create-board-dialog.component';
-import { Board, CreateBoardDto } from '@models/board.model';
+import { CreateBoardDto } from '@models/board.model';
 
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html',
-  styles: [
-    `
-      :host {
-        display: block;
-      }
-    `,
-  ],
+  styles: [`
+    :host {
+      display: block;
+    }
+  `]
 })
 export class NavbarComponent implements OnInit, OnDestroy {
   faBell = faBell;
@@ -57,31 +52,31 @@ export class NavbarComponent implements OnInit, OnDestroy {
     private tokenService: TokenService,
     private boardsService: BoardsService,
     private recentBoardsService: RecentBoardsService,
-    private dialog: Dialog,
+    private dialog: Dialog
   ) {}
 
   ngOnInit(): void {
-    this.recentBoards = this.recentBoardsService.getStack();
-
-    this.router.events
-      .pipe(
-        filter((event) => event instanceof NavigationEnd),
-        takeUntil(this.destroy$),
-      )
-      .subscribe((event: any) => {
-        const url = event.urlAfterRedirects || event.url;
-        const match = url.match(/\/app\/boards\/(\d+)/);
-        if (match) {
-          const boardId = parseInt(match[1], 10);
-          this.boardsService
-            .getBoardById(boardId)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe((board) => {
-              this.recentBoardsService.pushBoard(board);
-              this.recentBoards = this.recentBoardsService.getStack();
-            });
-        }
+    this.recentBoardsService.stackChanges$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(stack => {
+        this.recentBoards = stack.slice(0, 3);
       });
+
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      takeUntil(this.destroy$)
+    ).subscribe((event: any) => {
+      const url = event.urlAfterRedirects || event.url;
+      const match = url.match(/\/app\/boards\/(\d+)/);
+      if (match) {
+        const boardId = parseInt(match[1], 10);
+        this.boardsService.getBoardById(boardId)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe((board) => {
+            this.recentBoardsService.pushBoard(board);
+          });
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -105,10 +100,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
-  }
-
-  isValidToken(): void {
-    console.log(this.tokenService.isValidToken());
   }
 
   getColorClass(color: string): string {

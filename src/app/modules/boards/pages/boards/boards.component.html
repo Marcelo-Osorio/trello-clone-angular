@@ -26,7 +26,7 @@
 
     <main class="flex-1 min-w-0">
       <div class="mb-6">
-        <div class="flex items-center gap-2 mb-4">
+        <div class="flex items-center gap-2">
           <fa-icon [icon]="faSearch" class="text-gray-400 text-sm"></fa-icon>
           <input
             #searchInput
@@ -41,90 +41,78 @@
       <app-skeleton-loader *ngIf="loading" [count]="4"></app-skeleton-loader>
 
       <ng-container *ngIf="!loading">
-        <section *ngIf="!searchTerm" class="mb-8">
-          <h2 class="flex items-center gap-2 text-base font-semibold text-gray-800 mb-3">
-            <fa-icon [icon]="faClock" class="text-gray-500 text-sm"></fa-icon>
-            Recently viewed
-          </h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <a
-              *ngFor="let board of recentBoards"
-              [routerLink]="['/app/boards', board.id]"
-              class="block relative rounded-lg overflow-hidden shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
-              [ngClass]="{
-                'bg-sky-700': board.backgroundColor === 'sky',
-                'bg-green-700': board.backgroundColor === 'green',
-                'bg-violet-700': board.backgroundColor === 'violet',
-                'bg-amber-600': board.backgroundColor === 'yellow'
-              }"
-            >
-              <div class="px-4 py-3 h-24 flex flex-col justify-between">
-                <span class="text-white font-semibold text-sm leading-tight line-clamp-2">
-                  {{ board.title }}
-                </span>
-                <span class="text-white/70 text-xs">
-                  {{ board.updatedAt | date:'shortDate' }}
-                </span>
-              </div>
-              <button
-                (click)="openUpdateBoardDialog(board); $event.preventDefault(); $event.stopPropagation()"
-                class="absolute top-2 right-2 bg-white/20 hover:bg-white/40 text-white rounded-full w-7 h-7 flex items-center justify-center transition-colors focus:opacity-100"
-                [attr.aria-label]="'Update ' + board.title"
-                type="button"
-              >
-                <fa-icon [icon]="faPen" class="text-xs"></fa-icon>
-              </button>
-            </a>
-          </div>
-        </section>
-
-        <section>
-          <h2 *ngIf="!searchTerm" class="text-base font-semibold text-gray-800 mb-3">
-            All boards
-          </h2>
-          <h2 *ngIf="searchTerm" class="text-base font-semibold text-gray-800 mb-3">
-            Search results
-            <span class="text-sm font-normal text-gray-500">({{ filteredBoards.length }} found)</span>
-          </h2>
-
-          <div *ngIf="filteredBoards.length === 0 && searchTerm" class="text-center py-12">
-            <fa-icon [icon]="faSearch" class="text-4xl text-gray-300 mb-3"></fa-icon>
-            <p class="text-gray-500 text-sm">No boards match "{{ searchTerm }}"</p>
-          </div>
-
-          <div *ngIf="filteredBoards.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <ng-container *ngFor="let board of filteredBoards">
-              <a
-                [routerLink]="['/app/boards', board.id]"
-                class="block relative rounded-lg overflow-hidden shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
-                [ngClass]="{
-                  'bg-sky-700': board.backgroundColor === 'sky',
-                  'bg-green-700': board.backgroundColor === 'green',
-                  'bg-violet-700': board.backgroundColor === 'violet',
-                  'bg-amber-600': board.backgroundColor === 'yellow'
-                }"
-              >
-                <div class="px-4 py-3 h-24 flex flex-col justify-between">
-                  <span
-                    class="text-white font-semibold text-sm leading-tight line-clamp-2"
-                    [innerHTML]="highlightTitle(board.title)"
-                  ></span>
-                  <span class="text-white/70 text-xs">
-                    {{ board.updatedAt | date:'shortDate' }}
-                  </span>
-                </div>
+        <ng-container *ngIf="!searchTerm">
+          <ng-container *ngIf="hasRecentBoards">
+            <cdk-accordion>
+              <cdk-accordion-item #recentAccordion="cdkAccordionItem" [expanded]="recentlyViewedExpanded">
                 <button
-                  (click)="openUpdateBoardDialog(board); $event.preventDefault(); $event.stopPropagation()"
-                  class="absolute top-2 right-2 bg-white/20 hover:bg-white/40 text-white rounded-full w-7 h-7 flex items-center justify-center transition-colors focus:opacity-100"
-                  [attr.aria-label]="'Update ' + board.title"
                   type="button"
+                  (click)="recentAccordion.toggle()"
+                  class="flex items-center justify-between w-full text-left mb-3"
                 >
-                  <fa-icon [icon]="faPen" class="text-xs"></fa-icon>
+                  <h2 class="flex items-center gap-2 text-base font-semibold text-gray-800">
+                    <fa-icon [icon]="faClock" class="text-gray-500 text-sm"></fa-icon>
+                    Recently viewed
+                  </h2>
+                  <fa-icon
+                    [icon]="recentAccordion.expanded ? faChevronUp : faChevronDown"
+                    class="text-gray-400 text-sm"
+                  ></fa-icon>
                 </button>
-              </a>
-            </ng-container>
-          </div>
-        </section>
+                <div [hidden]="!recentAccordion.expanded" class="mb-8">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <app-board-card
+                      *ngFor="let board of recentBoards"
+                      [board]="board"
+                      [showUpdateIcon]="true"
+                      (boardUpdate)="openUpdateBoardDialog($event)"
+                    ></app-board-card>
+                  </div>
+                </div>
+              </cdk-accordion-item>
+            </cdk-accordion>
+          </ng-container>
+
+          <section>
+            <h2 class="text-base font-semibold text-gray-800 mb-3">All boards</h2>
+            <div *ngIf="!hasAllBoards" class="text-center py-12">
+              <fa-icon [icon]="faTrello" class="text-4xl text-gray-300 mb-3"></fa-icon>
+              <p class="text-gray-500 text-sm">No boards yet</p>
+            </div>
+            <div *ngIf="hasAllBoards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <app-board-card
+                *ngFor="let board of allBoards"
+                [board]="board"
+                [showUpdateIcon]="true"
+                (boardUpdate)="openUpdateBoardDialog($event)"
+              ></app-board-card>
+            </div>
+          </section>
+        </ng-container>
+
+        <ng-container *ngIf="searchTerm">
+          <section>
+            <h2 class="text-base font-semibold text-gray-800 mb-3">
+              Search results
+              <span class="text-sm font-normal text-gray-500">({{ filteredBoards.length }} found)</span>
+            </h2>
+
+            <div *ngIf="filteredBoards.length === 0" class="text-center py-12">
+              <fa-icon [icon]="faSearch" class="text-4xl text-gray-300 mb-3"></fa-icon>
+              <p class="text-gray-500 text-sm">No boards match "{{ searchTerm }}"</p>
+            </div>
+
+            <div *ngIf="filteredBoards.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <app-board-card
+                *ngFor="let board of filteredBoards"
+                [board]="board"
+                [showUpdateIcon]="true"
+                [searchTerm]="searchTerm"
+                (boardUpdate)="openUpdateBoardDialog($event)"
+              ></app-board-card>
+            </div>
+          </section>
+        </ng-container>
       </ng-container>
     </main>
   </div>

@@ -1,5 +1,4 @@
 # Product Required Document (Feature : boards)
-
 ## Problem
 The main issue is terminate with the implementation of boards and me endpoints across the app, include a better design in the boards module 
 ## Important

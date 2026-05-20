@@ -3,11 +3,12 @@ import { Router } from '@angular/router';
 import { Dialog } from '@angular/cdk/dialog';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { faPlus, faSearch, faClock, faPen } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faSearch, faClock, faPen, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import { faTrello as faTrelloBrand } from '@fortawesome/free-brands-svg-icons';
 
-import { Board, BoardBackgroundColor, CreateBoardDto, UpdateBoardDto } from '@models/board.model';
+import { Board, CreateBoardDto, UpdateBoardDto } from '@models/board.model';
 import { BoardsService } from '@services/boards.service';
+import { RecentBoardsService, RecentBoardEntry } from '@services/recent-boards.service';
 import { CreateBoardDialogComponent } from '@boards/components/create-board-dialog/create-board-dialog.component';
 import { UpdateBoardDialogComponent } from '@boards/components/update-board-dialog/update-board-dialog.component';
 
@@ -21,34 +22,63 @@ import { UpdateBoardDialogComponent } from '@boards/components/update-board-dial
   `]
 })
 export class BoardsComponent implements OnInit, OnDestroy {
-  boards: Board[] = [];
-  recentBoards: Board[] = [];
   allBoards: Board[] = [];
   filteredBoards: Board[] = [];
+  recentStackEntries: RecentBoardEntry[] = [];
+  recentBoards: Board[] = [];
   searchTerm = '';
   loading = true;
+  recentlyViewedExpanded = true;
 
   faTrello = faTrelloBrand;
   faPlus = faPlus;
   faSearch = faSearch;
   faClock = faClock;
   faPen = faPen;
+  faChevronDown = faChevronDown;
+  faChevronUp = faChevronUp;
 
   private destroy$ = new Subject<void>();
 
   constructor(
     private boardsService: BoardsService,
+    private recentBoardsService: RecentBoardsService,
     private router: Router,
     private dialog: Dialog
   ) {}
 
   ngOnInit(): void {
     this.loadBoards();
+    this.recentBoardsService.stackChanges$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(stack => {
+        this.recentStackEntries = stack;
+        this.syncRecentBoards();
+      });
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  get hasRecentBoards(): boolean {
+    return this.recentBoards.length > 0;
+  }
+
+  get hasAllBoards(): boolean {
+    return this.allBoards.length > 0;
+  }
+
+  private syncRecentBoards(): void {
+    if (this.allBoards.length === 0) {
+      this.recentBoards = [];
+      return;
+    }
+    this.recentBoards = this.recentStackEntries
+      .map(entry => this.allBoards.find(b => b.id === entry.id))
+      .filter((b): b is Board => !!b)
+      .slice(0, 4);
   }
 
   loadBoards(): void {
@@ -57,10 +87,9 @@ export class BoardsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (boards) => {
-          this.boards = boards.sort((a, b) => b.id - a.id);
-          this.recentBoards = this.boards.slice(0, 4);
-          this.allBoards = [...this.boards];
+          this.allBoards = boards.sort((a, b) => b.id - a.id);
           this.filteredBoards = [...this.allBoards];
+          this.syncRecentBoards();
           this.loading = false;
         },
         error: () => {
@@ -80,12 +109,6 @@ export class BoardsComponent implements OnInit, OnDestroy {
     }
   }
 
-  highlightTitle(title: string): string {
-    if (!this.searchTerm) return title;
-    const regex = new RegExp(`(${this.escapeRegex(this.searchTerm)})`, 'gi');
-    return title.replace(regex, '<mark class="bg-yellow-200 text-yellow-900 rounded px-0.5">$1</mark>');
-  }
-
   openCreateBoardDialog(): void {
     const dialogRef = this.dialog.open(CreateBoardDialogComponent, {
       width: '400px',
@@ -96,9 +119,7 @@ export class BoardsComponent implements OnInit, OnDestroy {
         this.boardsService.createBoard(result as CreateBoardDto)
           .pipe(takeUntil(this.destroy$))
           .subscribe((newBoard) => {
-            this.boards = [newBoard, ...this.boards].sort((a, b) => b.id - a.id);
-            this.recentBoards = this.boards.slice(0, 4);
-            this.allBoards = [...this.boards];
+            this.allBoards = [newBoard, ...this.allBoards].sort((a, b) => b.id - a.id);
             this.filteredBoards = this.searchTerm
               ? this.allBoards.filter(b => b.title.toLowerCase().includes(this.searchTerm))
               : [...this.allBoards];
@@ -118,25 +139,20 @@ export class BoardsComponent implements OnInit, OnDestroy {
         this.boardsService.updateBoard(board.id, result as UpdateBoardDto)
           .pipe(takeUntil(this.destroy$))
           .subscribe((updatedBoard) => {
-            const index = this.boards.findIndex(b => b.id === updatedBoard.id);
+            const index = this.allBoards.findIndex(b => b.id === updatedBoard.id);
             if (index !== -1) {
-              this.boards[index] = updatedBoard;
-              this.recentBoards = this.boards.slice(0, 4);
-              this.allBoards = [...this.boards];
+              this.allBoards[index] = updatedBoard;
               this.filteredBoards = this.searchTerm
                 ? this.allBoards.filter(b => b.title.toLowerCase().includes(this.searchTerm))
                 : [...this.allBoards];
+              this.syncRecentBoards();
             }
           });
       }
     });
   }
 
-  navigateToBoard(boardId: number): void {
-    this.router.navigate(['/app/boards', boardId]);
-  }
-
-  private escapeRegex(str: string): string {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  toggleRecentlyViewed(): void {
+    this.recentlyViewedExpanded = !this.recentlyViewedExpanded;
   }
 }
