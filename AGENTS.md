@@ -12,7 +12,11 @@ Angular 15 SPA (NgModule-based, not standalone). Project name: `trello-auth`. Au
 - `npm run build` — production build to `dist/trello-auth/`
 
 ## API documentation
-If you need more information of apis make a request mcp postman in my workspace and in collection Fake Trello API 
+API documentation is available in two ways:
+- **Postman MCP**: Query the `Fake Trello API` collection in your Postman workspace, my_workspace/Fake Trello API (recommended)
+- **Local file**: (If you can't log in mcp postman) `postman.json` in the project root contains the complete collection (sync with Postman workspace)
+
+To refresh the local file, run `postman_getCollection` via MCP and write the result to `postman.json`. 
 
 ## Key Conventions
 

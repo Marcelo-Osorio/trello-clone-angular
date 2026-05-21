@@ -1,239 +1,745 @@
 {
-	"info": {
-		"_postman_id": "d4b622b2-0c54-4316-b1a7-5ec5b11f9de2",
-		"name": "Fake Trello API",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "25495148"
-	},
-	"item": [
-		{
-			"name": "Auth",
-			"item": [
-				{
-					"name": "Login",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n\t\"email\": \"nicolas@mail.com\",\r\n\t\"password\": \"changeme\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{url}}/auth/login",
-							"host": [
-								"{{url}}auth"
-							],
-							"path": [
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Register",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n\t\"email\": \"nicolas2@mail.com\",\r\n\t\"password\": \"changeme\",\r\n\t\"name\": \"Nicolas 2\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{url}}/auth/register",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"auth",
-								"register"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Is Available",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n\t\"email\": \"admin@admin.com\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{url}}/auth/is-available",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"auth",
-								"is-available"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Recovery",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n\t\"email\": \"admin@mail.com\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{url}}/auth/recovery",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"auth",
-								"recovery"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Change Password",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n\t\"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImlhdCI6MTY1ODM5ODE3NywiZXhwIjoxNjU4Mzk4NDc3fQ.cB88jGRgDn50vdupConyKKPilvXHh79yZ4OSvBYf7Wg\",\r\n\t\"newPassword\": \"nuevochange\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{url}}/auth/change-password",
-							"protocol": "https",
-							"host": [
-								"fake-trello-api",
-								"herokuapp",
-								"com"
-							],
-							"path": [
-								"api",
-								"v1",
-								"auth",
-								"change-password"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Profile",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{url}}/auth/profile",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"auth",
-								"profile"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Users",
-			"item": [
-				{
-					"name": "Get All",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{url}}/users",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"users"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get One",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{url}}/users/1",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"users",
-								"1"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		}
-	],
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		}
-	],
-	"variable": [
-		{
-			"key": "url",
-			"value": "https://fake-trello-api.herokuapp.com/api/v1",
-			"type": "string"
-		}
-	]
+  "info": {
+    "_postman_id": "187df3cd-bf4e-4ea4-ad18-a873d9522b50",
+    "name": "Fake Trello API",
+    "description": "collection of Postman to Fake Trello API. Base URL: https://fake-trello-api.herokuapp.com",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "createdAt": "2026-05-09T00:40:46.000Z",
+    "updatedAt": "2026-05-19T13:54:02.000Z",
+    "lastUpdatedBy": "42665779",
+    "uid": "42665779-187df3cd-bf4e-4ea4-ad18-a873d9522b50"
+  },
+  "item": [
+    {
+      "name": "auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is success', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "if (json.access_token) pm.collectionVariables.set('access_token', json.access_token);",
+                  "if (json.accessToken) pm.collectionVariables.set('access_token', json.accessToken);",
+                  "if (json.token) pm.collectionVariables.set('access_token', json.token);",
+                  "if (json.refresh_token) pm.collectionVariables.set('refresh_token', json.refresh_token);",
+                  "if (json.refreshToken) pm.collectionVariables.set('refresh_token', json.refreshToken);"
+                ],
+                "id": "6f7bfd4d-0cb8-4077-ae4c-8363dad74d57"
+              }
+            }
+          ],
+          "id": "291f651b-e32f-407d-a314-80ddada00c2e",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@mail.com\",\n  \"password\": \"yourpassword\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Inicia sesión para obtener tokens de acceso. El test intenta guardar access_token y refresh_token automáticamente si vienen en la respuesta."
+          },
+          "response": [],
+          "createdAt": "2026-05-09T00:40:47.000Z",
+          "updatedAt": "2026-05-09T00:40:47.000Z",
+          "uid": "42665779-291f651b-e32f-407d-a314-80ddada00c2e"
+        },
+        {
+          "name": "Register",
+          "id": "9a43dcb3-3808-4258-b1ed-8babd84ebd5f",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nombre Usuario\",\n  \"email\": \"user@mail.com\",\n  \"password\": \"yourpassword\",\n  \"avatar\": \"https://url-de-la-imagen.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "register"]
+            },
+            "description": "Registra un nuevo usuario."
+          },
+          "response": [],
+          "createdAt": "2026-05-09T00:40:47.000Z",
+          "updatedAt": "2026-05-09T00:40:47.000Z",
+          "uid": "42665779-9a43dcb3-3808-4258-b1ed-8babd84ebd5f"
+        },
+        {
+          "name": "Is Available",
+          "id": "52bb4961-48a0-4b11-8098-3f57871b0539",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@mail.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/is-available",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "is-available"]
+            },
+            "description": "Verifica si un correo está disponible."
+          },
+          "response": [],
+          "createdAt": "2026-05-09T00:40:47.000Z",
+          "updatedAt": "2026-05-09T00:40:47.000Z",
+          "uid": "42665779-52bb4961-48a0-4b11-8098-3f57871b0539"
+        },
+        {
+          "name": "Change Password",
+          "id": "505b45f3-ac0e-4821-bc24-e7d7ea9eecb9",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"recovery-token-string\",\n  \"newPassword\": \"newPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/change-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "change-password"]
+            },
+            "description": "Cambia la contraseña del usuario."
+          },
+          "response": [],
+          "createdAt": "2026-05-09T00:40:47.000Z",
+          "updatedAt": "2026-05-09T00:40:47.000Z",
+          "uid": "42665779-505b45f3-ac0e-4821-bc24-e7d7ea9eecb9"
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is success', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "if (json.access_token) pm.collectionVariables.set('access_token', json.access_token);",
+                  "if (json.accessToken) pm.collectionVariables.set('access_token', json.accessToken);",
+                  "if (json.token) pm.collectionVariables.set('access_token', json.token);",
+                  "if (json.refresh_token) pm.collectionVariables.set('refresh_token', json.refresh_token);",
+                  "if (json.refreshToken) pm.collectionVariables.set('refresh_token', json.refreshToken);"
+                ],
+                "id": "fb2a69dc-a095-41b2-b135-f58bf506c670"
+              }
+            }
+          ],
+          "id": "c6e6a4da-303b-4c16-8518-5c390a3f4b33",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/refresh-token",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "refresh-token"]
+            },
+            "description": "Renueva el token de acceso usando el refresh token."
+          },
+          "response": [],
+          "createdAt": "2026-05-09T00:40:47.000Z",
+          "updatedAt": "2026-05-09T00:40:47.000Z",
+          "uid": "42665779-c6e6a4da-303b-4c16-8518-5c390a3f4b33"
+        },
+        {
+          "name": "Auth Profile",
+          "id": "cb033ffd-3eff-4722-abd7-e472ef662a7f",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "profile"]
+            },
+            "description": "Obtiene el perfil del usuario autenticado. Requiere Bearer Token."
+          },
+          "response": [],
+          "createdAt": "2026-05-09T00:40:47.000Z",
+          "updatedAt": "2026-05-09T00:40:47.000Z",
+          "uid": "42665779-cb033ffd-3eff-4722-abd7-e472ef662a7f"
+        },
+        {
+          "name": "Recovery",
+          "id": "6a27e256-603d-4709-bebe-3aa436f25b1e",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"string\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/recovery",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "recovery"]
+            }
+          },
+          "response": [],
+          "createdAt": "2026-05-14T13:10:40.000Z",
+          "updatedAt": "2026-05-14T13:12:11.000Z",
+          "uid": "42665779-6a27e256-603d-4709-bebe-3aa436f25b1e"
+        }
+      ],
+      "id": "a65abf99-144d-42f9-adec-87b56dce559c",
+      "createdAt": "2026-05-09T00:40:47.000Z",
+      "updatedAt": "2026-05-14T13:10:40.000Z",
+      "uid": "42665779-a65abf99-144d-42f9-adec-87b56dce559c"
+    },
+    {
+      "name": "users",
+      "item": [
+        {
+          "name": "Get Users",
+          "id": "9e20b593-e451-4e41-9ac7-bf7b1eee72a9",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users"]
+            },
+            "description": "Lista todos los usuarios."
+          },
+          "response": [],
+          "createdAt": "2026-05-09T00:40:47.000Z",
+          "updatedAt": "2026-05-09T00:40:47.000Z",
+          "uid": "42665779-9e20b593-e451-4e41-9ac7-bf7b1eee72a9"
+        },
+        {
+          "name": "Get User By ID",
+          "id": "2976d154-b3cf-4a5e-9b93-5f8417419343",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "{{user_id}}"]
+            },
+            "description": "Obtiene un usuario específico por ID."
+          },
+          "response": [],
+          "createdAt": "2026-05-09T00:40:47.000Z",
+          "updatedAt": "2026-05-09T00:40:47.000Z",
+          "uid": "42665779-2976d154-b3cf-4a5e-9b93-5f8417419343"
+        },
+        {
+          "name": "Update User",
+          "id": "0b2e751d-6c19-4c40-8ec7-43cd1b0906f2",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nuevo Nombre\",\n  \"email\": \"user@mail.com\",\n  \"password\": \"newpassword\",\n  \"avatar\": \"https://nueva-url.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "{{user_id}}"]
+            },
+            "description": "Actualiza los datos de un usuario."
+          },
+          "response": [],
+          "createdAt": "2026-05-09T00:40:47.000Z",
+          "updatedAt": "2026-05-09T00:40:47.000Z",
+          "uid": "42665779-0b2e751d-6c19-4c40-8ec7-43cd1b0906f2"
+        }
+      ],
+      "id": "f9567618-4cb0-4c30-8b96-f3754f9b9bba",
+      "createdAt": "2026-05-09T00:40:47.000Z",
+      "updatedAt": "2026-05-09T00:40:47.000Z",
+      "uid": "42665779-f9567618-4cb0-4c30-8b96-f3754f9b9bba"
+    },
+    {
+      "name": "boards",
+      "item": [
+        {
+          "name": "Get Boards",
+          "id": "32285e3d-2a6d-42e7-9d0a-4cd67500bea2",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/boards",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "boards"]
+            },
+            "description": "Lista todos los tableros."
+          },
+          "response": [],
+          "createdAt": "2026-05-09T00:40:47.000Z",
+          "updatedAt": "2026-05-09T00:40:47.000Z",
+          "uid": "42665779-32285e3d-2a6d-42e7-9d0a-4cd67500bea2"
+        },
+        {
+          "name": "Create Board",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is success', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.collectionVariables.set('board_id', json.id);"
+                ],
+                "id": "66593316-14b3-423b-b43c-bc272d8dcfce"
+              }
+            }
+          ],
+          "id": "0dc900cd-87ba-417b-b766-b01bf9d4d949",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Nombre del Tablero\",\n  \"backgroundColor\": \"sky\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/boards",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "boards"]
+            },
+            "description": "Crea un tablero. Colores permitidos según tu contexto de app: sky, green, violet, yellow."
+          },
+          "response": [],
+          "createdAt": "2026-05-09T00:40:47.000Z",
+          "updatedAt": "2026-05-09T00:40:47.000Z",
+          "uid": "42665779-0dc900cd-87ba-417b-b766-b01bf9d4d949"
+        },
+        {
+          "name": "Get Board By ID",
+          "id": "ce904db5-94e2-4df7-bec0-e1d0a82205bc",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/boards/{{board_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "boards", "{{board_id}}"]
+            },
+            "description": "Obtiene un tablero detallado, incluyendo listas y tarjetas si la API lo devuelve."
+          },
+          "response": [],
+          "createdAt": "2026-05-09T00:40:47.000Z",
+          "updatedAt": "2026-05-09T00:40:47.000Z",
+          "uid": "42665779-ce904db5-94e2-4df7-bec0-e1d0a82205bc"
+        },
+        {
+          "name": "Update Board",
+          "id": "f5593639-20aa-4d49-92e3-cbd262bf9b09",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Nuevo Título\",\n  \"backgroundColor\": \"green\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/boards/{{board_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "boards", "{{board_id}}"]
+            },
+            "description": "Actualiza el título o color del tablero."
+          },
+          "response": [],
+          "createdAt": "2026-05-09T00:40:47.000Z",
+          "updatedAt": "2026-05-18T14:54:08.000Z",
+          "uid": "42665779-f5593639-20aa-4d49-92e3-cbd262bf9b09"
+        }
+      ],
+      "id": "c8ad54a1-5578-4e56-8be2-0c6f19d2f3eb",
+      "createdAt": "2026-05-09T00:40:47.000Z",
+      "updatedAt": "2026-05-09T00:40:47.000Z",
+      "uid": "42665779-c8ad54a1-5578-4e56-8be2-0c6f19d2f3eb"
+    },
+    {
+      "name": "me",
+      "item": [
+        {
+          "name": "Me Profile",
+          "id": "3e14c09a-343a-4e80-8814-cde7ee267e3b",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/me/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "me", "profile"]
+            },
+            "description": "Obtiene el perfil completo del usuario autenticado. Requiere Bearer Token."
+          },
+          "response": [],
+          "createdAt": "2026-05-09T00:40:47.000Z",
+          "updatedAt": "2026-05-09T00:40:47.000Z",
+          "uid": "42665779-3e14c09a-343a-4e80-8814-cde7ee267e3b"
+        },
+        {
+          "name": "Me Boards",
+          "id": "25e53a3f-13c4-4501-a025-00cfe96acb0a",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/me/boards",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "me", "boards"]
+            },
+            "description": "Lista los tableros del usuario autenticado. Requiere Bearer Token."
+          },
+          "response": [],
+          "createdAt": "2026-05-09T00:40:47.000Z",
+          "updatedAt": "2026-05-16T22:41:52.000Z",
+          "uid": "42665779-25e53a3f-13c4-4501-a025-00cfe96acb0a"
+        }
+      ],
+      "id": "87e59b26-af6e-4505-8242-1add50636316",
+      "createdAt": "2026-05-09T00:40:47.000Z",
+      "updatedAt": "2026-05-09T00:40:47.000Z",
+      "uid": "42665779-87e59b26-af6e-4505-8242-1add50636316"
+    },
+    {
+      "name": "list",
+      "item": [
+        {
+          "name": "Create List",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is success', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.collectionVariables.set('list_id', json.id);"
+                ],
+                "id": "5a2513c4-9ba3-4e72-945e-d1702a9c0410"
+              }
+            }
+          ],
+          "id": "fe9fdbab-aa17-4909-b686-454d6c42c779",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Nombre de la Lista\",\n  \"boardId\": {{board_id}},\n  \"position\": 65535\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/lists",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "lists"]
+            },
+            "description": "Crea una lista dentro de un tablero. Guarda list_id automáticamente si la respuesta devuelve id."
+          },
+          "response": [],
+          "createdAt": "2026-05-09T00:40:47.000Z",
+          "updatedAt": "2026-05-09T00:40:47.000Z",
+          "uid": "42665779-fe9fdbab-aa17-4909-b686-454d6c42c779"
+        }
+      ],
+      "id": "f9cbb76a-e93e-48cd-b75d-02d0a8836f69",
+      "createdAt": "2026-05-09T00:40:47.000Z",
+      "updatedAt": "2026-05-09T00:40:47.000Z",
+      "uid": "42665779-f9cbb76a-e93e-48cd-b75d-02d0a8836f69"
+    },
+    {
+      "name": "cards",
+      "item": [
+        {
+          "name": "Create Card",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "a713e01a-3124-4a76-bdde-fee4b55e0054",
+                "exec": [
+                  "pm.test('Status code is success', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.collectionVariables.set('card_id', json.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "6a6edb4d-4dc8-458a-b8ee-459dcfc32f18",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"this is a tasks\",\n  \"listId\": {{list_id}},\n  \"boardId\": {{board_id}},\n  \"position\": 65535,\n  \"description\": \"Descripción detallada opcional\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/cards",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "cards"]
+            },
+            "description": "Crea una nueva tarjeta. Guarda card_id automáticamente si la respuesta devuelve id."
+          },
+          "response": [],
+          "createdAt": "2026-05-09T00:40:47.000Z",
+          "updatedAt": "2026-05-13T15:04:52.000Z",
+          "uid": "42665779-6a6edb4d-4dc8-458a-b8ee-459dcfc32f18"
+        },
+        {
+          "name": "Update Card",
+          "id": "f148fb11-9c69-454a-a94d-12bce8187f23",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Nuevo Título\",\n  \"listId\": {{list_id}},\n  \"boardId\": {{board_id}},\n  \"position\": 1024,\n  \"description\": \"Nueva descripción\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/cards/{{card_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "cards", "{{card_id}}"]
+            },
+            "description": "Actualiza una tarjeta o la mueve de posición/lista."
+          },
+          "response": [],
+          "createdAt": "2026-05-09T00:40:47.000Z",
+          "updatedAt": "2026-05-09T00:40:47.000Z",
+          "uid": "42665779-f148fb11-9c69-454a-a94d-12bce8187f23"
+        }
+      ],
+      "id": "f51e0cd7-f302-41e0-a1b5-867945da009f",
+      "createdAt": "2026-05-09T00:40:47.000Z",
+      "updatedAt": "2026-05-09T00:40:47.000Z",
+      "uid": "42665779-f51e0cd7-f302-41e0-a1b5-867945da009f"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""],
+        "id": "01def0fc-9fd6-4c7d-9c83-306fbd265f75"
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""],
+        "id": "242be427-caa2-4525-b0f1-d73105443cd8"
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://fake-trello-api.herokuapp.com"
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
+      "value": ""
+    },
+    {
+      "key": "user_id",
+      "value": "1"
+    },
+    {
+      "key": "board_id",
+      "value": "1"
+    },
+    {
+      "key": "list_id",
+      "value": "1"
+    },
+    {
+      "key": "card_id",
+      "value": "1"
+    }
+  ]
 }

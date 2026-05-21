@@ -26,6 +26,9 @@ import { CreateBoardDto } from '@models/board.model';
   styles: [`
     :host {
       display: block;
+      position: sticky;
+      top: 0;
+      z-index: 50;
     }
   `]
 })
