@@ -62,7 +62,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.recentBoardsService.stackChanges$
       .pipe(takeUntil(this.destroy$))
       .subscribe(stack => {
-        this.recentBoards = stack.slice(0, 3);
+        this.recentBoards = stack.slice(0, 4);
       });
 
     this.router.events.pipe(
