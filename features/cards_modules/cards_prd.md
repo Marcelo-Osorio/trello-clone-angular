@@ -15,16 +15,16 @@ Our real problem here is the users can't operate with their cards and list, beca
 - Create a way to save more options about our description in each card than just description text field. such as labels, mention, checklist, due dates.
 - Whenever we load one board by its id, be sure that its load is inside of the component. not external. change our actual load that is in navbar and now should be when we open a board. 
 - **Create design add list and add cards**.
-  - ![add list](./assets/trello-card-list-creation.png) add a list
-  - ![add cards|208](./assets/trello-add-card.png) add cards title, with empty description
+  - [IMAGE: An input field with placeholder text "Enter list title..." and below it a blue "Add list" button with an X (cancel) button next to it, all on a blue background] add a list
+  - [IMAGE: A list titled "Ideas" with a text input field for typing a new card title (showing "W" being typed), a blue "Add card" button and X cancel button at the bottom] add cards title, with empty description
 - **Improve design card view inside of its modal.**
-  - ![list](./assets/trello-list-preview.png) ->The image show us how a list it looks to be, if we have labels in a card show their color at the top of each card, and in the bottom if it has checklist put it there so for example if it was check 2/3 show it like in the image -> When press to 3 dots in each list we will have options in a mini pop-up (archive all cards in this list, archive list with cards)
-  - ![seach](./assets/trello-list-search.png) Search By label, @member, a term in whatever card (title, description), due time, but not search in the list title -> When a search it's just done immediately keep showing every list, but will only show the cards that have any coincidence if the list doesn't have any cards to show, so keep showing the list empty. 
+  - [IMAGE: A Kanban list titled "Ideas" containing three cards: first card "Writing a book" with green and red colored label bars at the top and a checklist icon with "2/3" at the bottom; second card "Email my team about next week's meeting"; third card "Create a new website"; and a "+ Add another card" button at the bottom of the list] ->The image show us how a list it looks to be, if we have labels in a card show their color at the top of each card, and in the bottom if it has checklist put it there so for example if it was check 2/3 show it like in the image -> When press to 3 dots in each list we will have options in a mini pop-up (archive all cards in this list, archive list with cards)
+  - [IMAGE: A search panel on the right side titled "Search cards" with a text input field, label filter options (No labels, green "Writing", yellow, orange, red "Urgent" with checkmark, purple, blue), member filter options (No members, Scott Friesen), and on the left side a chip showing "3 search results" with an X button] Search By label, @member, a term in whatever card (title, description), due time, but not search in the list title -> When a search it's just done immediately keep showing every list, but will only show the cards that have any coincidence if the list doesn't have any cards to show, so keep showing the list empty. 
 ### Inside of each card modal : 
 
-* ![Modal Card](./assets/trello-show-card.png) -> In the init modal of a card just we can see title, empty description in a textarea and the activity which be the comments we left to the card also when we click in the title list, that will allow us edit it, just there.
+* [IMAGE: A card modal for "Writing a book" with subtitle "in list Ideas", a "Description" section containing a textarea with placeholder "Add a more detailed description...", a blue "Save" button and X cancel button, an "Activity" section with "Hide Details" button, and a comment input with user avatar] -> In the init modal of a card just we can see title, empty description in a textarea and the activity which be the comments we left to the card also when we click in the title list, that will allow us edit it, just there.
 * Make button **Checklist works**, it will open a little modal that will ask us a name for the group of checklist. 
-   * ![checklist format in description](./assets/trello-add-checklist.png)
+    * [IMAGE: A checklist section titled "Remember to do this" with a progress bar showing 67% complete, buttons "Hide checked items" and "Delete" on the right, three checklist items ("Research my topic" checked, "Hire an editor" checked, "Find a quite place to write" unchecked), and an "Add an item" button at the bottom]
    * In the image checklist format in description : 
    1. how we'll see checklist section in the card modal after putting the name of checklist group.
    2.  It could have hide checked items button
@@ -34,7 +34,7 @@ Our real problem here is the users can't operate with their cards and list, beca
 * Make **Labels and Due Dates** buttons works, turn Dates into a Establish Due Date.
   * Labels when we click in label button this will open a modal, we will have just 6 labels of different colors to choose (green, yellow, orange, red, purple, blue), also if we click in whatever label there we could write its name above it.
   * Due Date, will open a modal that will show us the calendar by just the month ''month - year'', but if we click in the month will show us a different years to move us and as it is a due date the previous days and dates will be disable only available those are front of now, and a button to save (put due date in our main modal card) and a button to remove it or edit it. 
-  * ![Label and dates](./assets/trello-card-dates.png) The imagen is how we'll see our LABELS and Due dates when we had finished to created in their modals.
+  * [IMAGE: A card modal for "Writing a book" showing a LABELS section with a green "Writing" label, a red "Urgent" label, and a "+" button to add more; a DUE DATE section with checkbox and "Aug 31 at 11:22 AM"; a Description section with "Edit" button showing two lines of text; and a right panel "ADD TO CARD" with Members, Labels, Checklist, and Dates options] The imagen is how we'll see our LABELS and Due dates when we had finished to created in their modals.
   *  When we make whatever reference to other person by putting '@' that will open a mini pop-up where we can select a person we want to refer, those who was added to participate in the board.
   * When there's a click in members button show all people that was added to the board.
 
@@ -50,7 +50,7 @@ Our real problem here is the users can't operate with their cards and list, beca
 ### Main page view of cards and list
 | *@app_trello\src\app\modules\boards\pages\board*
 * The user should get in a board and see everything inside in it, including their list and cards
-*  A user can touch and see the new navbar below of the normal, to access home icon to redirect home page preview boards, name board capable to edit its name when we click in it, button invite persons,  archived button, Search button)
+*  A user can touch and see the new navbar below of the normal, to access home icon to redirect home page preview boards, name board capable to edit its name when we click on it, button invite persons,  archived button, Search button)
 #### Navbar 
 > This will be a navbar just in this page, that would've below main navbar with the options in this order (Icon HOME to redirect home page preview boards, Name of board capable to edit when we click on it, button to invite persons, archived button, Search button).
 
@@ -107,7 +107,7 @@ If you look endpoint cards the description just can be create and update in a te
 * **Members.** So will open a mini pop-up, read only to see available users across the whole board ready to be mention in textField by @.
 * **Labels.** So will open a modal, we will have just 6 labels of different colors to choose (green, yellow, orange, red, purple, blue), also if we click in whatever label, we could write its name above it. But when we reload the page again? it's still showing all labels in the modal but always putting label's name in those who already has one (that's even include labels that were modified in others cards modals). To remember all labels across the board always when from board preview get into a single board will load all its list and cards that are part of the board, when that's is loaded, so extract all labels of each list and each cards and put them in a session storage that also will be update when we create or modify a label. 
 * **Checklist**. So it will open a little modal that will ask us a name for the group of checklist. 
-* **Due Dates.** Just will open a modal and in it calendar where we could select a due date and a hour, but we just could select a date that is in future not in the past since now.
+* **Due Dates.** Just will open a modal and in it calendar where we could select a due date and a hour, but we just could select a date that is in future not in past since now.
 #### Functionality and representation in the card modal
 Will be showing in this order :
 *  **Title**. The card title, it can be rewrite if we click on it, also remark the list's name where belongs.
@@ -125,6 +125,4 @@ Will be showing in this order :
 2. Split the logic in cards modal because will have labels, due dates and so on, split them in other components and to each them give the capabilities of a react form, to from the component can send information to father components that is handling the entire logic of react forms
 3. Whenever we change something in a card modal send to endpoint put card
 4. Just to remember we have boards page preview @src\app\modules\boards\pages\boards/ from there we can access to see a single board deeply @src\app\modules\boards\pages\board/ with its list and cards, but this page only show a preview of list with cards (also don't forget the new navbar, the previous we still keeping) to be deeply go to click in a preview card and you'll see title of a card, and their description (text field, labels, checklist, due dates, members)
-
-
-
+5. All images descriptions here take it as an example of how it looks to be.
