@@ -1,24 +1,20 @@
 {
   "main": {
-    "id": "ed84e6ecf09dae4d",
+    "id": "8bd3209c731b53e7",
     "type": "split",
     "children": [
       {
-        "id": "fdd52709cdbceca9",
+        "id": "23db1ad9cea64cc7",
         "type": "tabs",
         "children": [
           {
-            "id": "c64120b49f3346a4",
+            "id": "3f0f70fe3e4e4874",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "cards_modules/cards_prd.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "cards_prd"
+              "title": "New tab"
             }
           }
         ]
@@ -27,15 +23,15 @@
     "direction": "vertical"
   },
   "left": {
-    "id": "bd6843f7795576e8",
+    "id": "917f92ccfa2215b0",
     "type": "split",
     "children": [
       {
-        "id": "0d81b354f28b968e",
+        "id": "f665a66f62a54ddc",
         "type": "tabs",
         "children": [
           {
-            "id": "a24a450f896bad8a",
+            "id": "d96d65de582014c7",
             "type": "leaf",
             "state": {
               "type": "file-explorer",
@@ -48,7 +44,7 @@
             }
           },
           {
-            "id": "41185d65d10512a5",
+            "id": "d6409cceef204817",
             "type": "leaf",
             "state": {
               "type": "search",
@@ -65,7 +61,7 @@
             }
           },
           {
-            "id": "35d69457c2e599fd",
+            "id": "4c73d0faa043eccd",
             "type": "leaf",
             "state": {
               "type": "bookmarks",
@@ -81,20 +77,19 @@
     "width": 300
   },
   "right": {
-    "id": "f1e8909c303464a1",
+    "id": "9355191bd2e7300f",
     "type": "split",
     "children": [
       {
-        "id": "f40dd6986c6633e5",
+        "id": "4d78da8d222fae0f",
         "type": "tabs",
         "children": [
           {
-            "id": "59f88d991e357435",
+            "id": "a4b668441f19a4e8",
             "type": "leaf",
             "state": {
               "type": "backlink",
               "state": {
-                "file": "cards_modules/cards_prd.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,25 +99,24 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for cards_prd"
+              "title": "Backlinks"
             }
           },
           {
-            "id": "15f745f5dceb620a",
+            "id": "87f819de7accaf81",
             "type": "leaf",
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "cards_modules/cards_prd.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from cards_prd"
+              "title": "Outgoing links"
             }
           },
           {
-            "id": "a66a0daea901dd77",
+            "id": "85b0c86c32815930",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -137,7 +131,7 @@
             }
           },
           {
-            "id": "8742de382192306b",
+            "id": "b7852ad7c3f42dbe",
             "type": "leaf",
             "state": {
               "type": "all-properties",
@@ -151,18 +145,17 @@
             }
           },
           {
-            "id": "569f23d5d56e91a1",
+            "id": "357d6182eb4106cf",
             "type": "leaf",
             "state": {
               "type": "outline",
               "state": {
-                "file": "cards_modules/cards_prd.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of cards_prd"
+              "title": "Outline"
             }
           }
         ]
@@ -183,24 +176,12 @@
       "bases:Create new base": false
     }
   },
-  "active": "c64120b49f3346a4",
+  "active": "3f0f70fe3e4e4874",
   "lastOpenFiles": [
-    "Lamba.md",
     "cards_modules/cards_prd.md",
-    "caso base.md",
-    "cards_modules/assets/trello-show-card.PNG",
-    "cards_modules/assets/trello-list-search.PNG",
-    "cards_modules/assets/trello-list-preview.PNG",
-    "cards_modules/assets/trello-card-labels.PNG",
-    "cards_modules/assets/trello-card-dates.PNG",
-    "cards_modules/assets/trello-add-checklist.PNG",
-    "cards_modules/assets/trello-card-list-creation.PNG",
-    "cards_modules/assets/trello-add-card.PNG",
     "boards_preview/plan.md",
-    "cards_modules/assets",
-    "cards_modules/trello-list-search.PNG",
-    "cards_modules/trello-card-dates.PNG",
+    "boards_preview/bugs_resolution.md",
     "boards_preview/boards_prd.md",
-    "boards_preview/bugs_resolution.md"
+    "boards_preview"
   ]
 }
