@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { CdkAccordionModule } from '@angular/cdk/accordion';
 import { DialogModule } from '@angular/cdk/dialog';
@@ -17,6 +17,7 @@ import { BoardCardComponent } from './components/board-card/board-card.component
 import { CreateBoardDialogComponent } from './components/create-board-dialog/create-board-dialog.component';
 import { UpdateBoardDialogComponent } from './components/update-board-dialog/update-board-dialog.component';
 import { SkeletonLoaderComponent } from './components/skeleton-loader/skeleton-loader.component';
+import { BoardNavbarComponent } from './components/board-navbar/board-navbar.component';
 
 @NgModule({
   declarations: [
@@ -27,9 +28,11 @@ import { SkeletonLoaderComponent } from './components/skeleton-loader/skeleton-l
     CreateBoardDialogComponent,
     UpdateBoardDialogComponent,
     SkeletonLoaderComponent,
+    BoardNavbarComponent,
   ],
   imports: [
     CommonModule,
+    FormsModule,
     BoardsRoutingModule,
     SharedModule,
     DragDropModule,

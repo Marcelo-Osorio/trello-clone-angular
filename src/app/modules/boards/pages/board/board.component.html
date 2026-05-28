@@ -1,26 +1,48 @@
 <div class="w-full h-full bg-sky-600 px-4 pb-4">
-  <div class="flex flex-col h-full">
-    <div>
-      <h2 class="text-xl font-bold text-white my-4">Demo Board</h2>
-    </div>
-    <div class="flex grow items-start w-full h-full overflow-x-scroll" cdkDropListGroup>
-      <div class="rounded bg-gray-200 w-72 p-2 mr-3 shrink-0" *ngFor="let column of columns">
-        <div class="flex justify-between py-1">
-          <h3 class="text-sm font-bold ml-2">{{ column.title }}</h3>
-        </div>
+  <!-- Loading state -->
+  <div *ngIf="loading" class="flex items-center justify-center h-full">
+    <div class="text-white text-lg">Loading board...</div>
+  </div>
 
-        <div class="text-sm mt-2 min-h-[2.5rem]" cdkDropList (cdkDropListDropped)="drop($event)" [cdkDropListData]="column.todos">
+  <!-- Error state -->
+  <div *ngIf="error && !loading" class="flex flex-col items-center justify-center h-full gap-4">
+    <div class="text-white text-lg">{{ error }}</div>
+    <a routerLink="/app/boards" class="text-white underline hover:no-underline">Back to boards</a>
+  </div>
+
+  <!-- Board content -->
+  <div *ngIf="board && !loading" class="flex flex-col h-full">
+    <app-board-navbar
+      [board]="board"
+      (boardNameChange)="onBoardNameChange($event)"
+    ></app-board-navbar>
+
+    <div class="flex grow items-start w-full h-full overflow-x-auto gap-3 pt-3">
+      <!-- List placeholders (ListComponent comes in PR-3) -->
+      <div
+        *ngFor="let list of lists"
+        class="rounded bg-gray-200 w-72 p-2 shrink-0"
+      >
+        <h3 class="text-sm font-bold ml-2 py-1">{{ list.title }}</h3>
+        <div class="text-sm mt-2 min-h-[2.5rem]">
           <div
-            (click)="openDialog(todo)"
-            *ngFor="let todo of column.todos"
-            cdkDrag
-            class="bg-white shadow p-2 rounded mt-2 border-b border-x-gray-300 cursor-pointer hover:bg-gray-400"
+            *ngFor="let card of list.cards"
+            class="bg-white shadow p-2 rounded mt-2 border-b border-x-gray-300 cursor-pointer hover:bg-gray-100"
           >
-            {{ todo.title }}
+            {{ card.title }}
           </div>
         </div>
       </div>
-      <app-btn color="light" class="shrink-0" (click)="addColumn()">Add Column</app-btn>
+
+      <!-- Add list placeholder (comes in PR-3) -->
+      <div class="shrink-0">
+        <button
+          class="bg-white/30 hover:bg-white/50 text-white rounded px-4 py-2 text-sm font-medium transition-colors"
+          type="button"
+        >
+          + Add list
+        </button>
+      </div>
     </div>
   </div>
 </div>
