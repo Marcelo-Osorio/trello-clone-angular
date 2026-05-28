@@ -60,7 +60,7 @@
   <button
     (click)="onSearchToggle()"
     class="flex items-center justify-center w-8 h-8 rounded hover:bg-white/20 transition-colors"
-    [class.bg-white/30]="searchOpen"
+    [ngClass]="{'bg-white/30': searchOpen}"
     type="button"
     aria-label="Toggle search"
   >
