@@ -1,103 +1,98 @@
-import { Component } from '@angular/core';
-import {
-  CdkDragDrop,
-  moveItemInArray,
-  transferArrayItem,
-} from '@angular/cdk/drag-drop';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Dialog } from '@angular/cdk/dialog';
-import { TodoDialogComponent } from '@boards/components/todo-dialog/todo-dialog.component';
+import { Subscription } from 'rxjs';
 
-import { ToDo, Column } from '@models/todo.model';
+import { BoardsService } from '@services/boards.service';
+import { ArchivedService } from '@services/archived.service';
+import { Board } from '@models/board.model';
+import { List } from '@models/list.model';
 
 @Component({
   selector: 'app-board',
   templateUrl: './board.component.html',
   styles: [
     `
-      .cdk-drop-list-dragging .cdk-drag {
-        transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
-      }
-      .cdk-drag-animating {
-        transition: transform 300ms cubic-bezier(0, 0, 0.2, 1);
+      :host {
+        display: block;
+        height: 100%;
       }
     `,
   ],
 })
-export class BoardComponent {
-  columns: Column[] = [
-    {
-      title: 'ToDo',
-      todos: [
-        {
-          id: '1',
-          title: 'Make dishes',
-        },
-        {
-          id: '2',
-          title: 'Eat a coffee',
-        },
-      ],
-    },
-    {
-      title: 'Doing',
-      todos: [
-        {
-          id: '3',
-          title: 'Watch Angular Path in Platzi',
-        },
-      ],
-    },
-    {
-      title: 'Done',
-      todos: [
-        {
-          id: '4',
-          title: 'Play video games',
-        },
-      ],
-    },
-  ];
+export class BoardComponent implements OnInit, OnDestroy {
+  board: Board | null = null;
+  lists: List[] = [];
+  loading = true;
+  error: string | null = null;
 
-  todos: ToDo[] = [];
-  doing: ToDo[] = [];
-  done: ToDo[] = [];
+  private paramsSub: Subscription | null = null;
 
-  constructor(private dialog: Dialog) {}
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private boardsService: BoardsService,
+    private archivedService: ArchivedService,
+    private dialog: Dialog,
+  ) {}
 
-  drop(event: CdkDragDrop<ToDo[]>) {
-    if (event.previousContainer === event.container) {
-      moveItemInArray(
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex
-      );
-    } else {
-      transferArrayItem(
-        event.previousContainer.data,
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex
-      );
-    }
-  }
-
-  addColumn() {
-    this.columns.push({
-      title: 'New Column',
-      todos: [],
+  ngOnInit(): void {
+    this.paramsSub = this.route.params.subscribe((params) => {
+      const id = Number(params['id']);
+      if (id) {
+        this.loadBoard(id);
+      }
     });
   }
 
-  openDialog(todo: ToDo) {
-    const dialogRef = this.dialog.open(TodoDialogComponent, {
-      minWidth: '300px',
-      maxWidth: '50%',
-      data: {
-        todo: todo,
+  ngOnDestroy(): void {
+    this.paramsSub?.unsubscribe();
+  }
+
+  onBoardNameChange(newName: string): void {
+    if (!this.board || !newName.trim()) {
+      return;
+    }
+    this.boardsService.updateBoard(this.board.id, { title: newName.trim() }).subscribe({
+      next: (updated) => {
+        this.board = updated;
       },
     });
-    dialogRef.closed.subscribe((output) => {
-      console.log(output);
+  }
+
+  private loadBoard(id: number): void {
+    this.loading = true;
+    this.error = null;
+
+    this.boardsService.getBoardById(id).subscribe({
+      next: (board) => {
+        this.board = board;
+        this.lists = this.filterArchived(board);
+        this.loading = false;
+
+        // Clean stale archived entries
+        const serverListIds = (board.lists || []).map((l) => l.id);
+        const serverCardIds = (board.cards || []).map((c) => c.id);
+        this.archivedService.cleanStale(id, serverListIds, serverCardIds);
+      },
+      error: () => {
+        this.error = 'Failed to load board. Please try again.';
+        this.loading = false;
+      },
     });
+  }
+
+  private filterArchived(board: Board): List[] {
+    const archived = this.archivedService.getArchived(board.id);
+    const archivedListIds = new Set(archived.lists.map((l) => l.id));
+    const archivedCardIds = new Set(archived.cards.map((c) => c.id));
+
+    const lists = board.lists || [];
+    return lists
+      .filter((list) => !archivedListIds.has(list.id))
+      .map((list) => ({
+        ...list,
+        cards: (list.cards || []).filter((card) => !archivedCardIds.has(card.id)),
+      }));
   }
 }
