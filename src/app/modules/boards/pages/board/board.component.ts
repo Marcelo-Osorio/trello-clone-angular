@@ -64,6 +64,10 @@ export class BoardComponent implements OnInit, OnDestroy {
     });
   }
 
+  get cardDropListIds(): string[] {
+    return this.lists.map((list) => `card-drop-${list.id}`);
+  }
+
   onCardDrop(event: CdkDragDrop<Card[]>, targetList: List): void {
     if (event.previousContainer === event.container) {
       // Reorder within same list

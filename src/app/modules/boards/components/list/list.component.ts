@@ -13,6 +13,7 @@ import { List } from '@models/list.model';
 export class ListComponent {
   @Input() list!: List;
   @Input() listIndex!: number;
+  @Input() connectedDropListIds: string[] = [];
 
   @Output() cardDropped = new EventEmitter<CdkDragDrop<Card[]>>();
   @Output() addCard = new EventEmitter<{ listId: number; title: string }>();

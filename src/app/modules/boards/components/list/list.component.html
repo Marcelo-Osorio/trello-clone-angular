@@ -40,7 +40,9 @@
   <div
     class="flex-1 overflow-y-auto px-2 py-1 min-h-[8px]"
     cdkDropList
+    [id]="'card-drop-' + list.id"
     [cdkDropListData]="cards"
+    [cdkDropListConnectedTo]="connectedDropListIds"
     (cdkDropListDropped)="onCardDrop($event)"
   >
     <app-card-preview
