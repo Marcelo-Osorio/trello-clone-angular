@@ -18,6 +18,8 @@ import { CreateBoardDialogComponent } from './components/create-board-dialog/cre
 import { UpdateBoardDialogComponent } from './components/update-board-dialog/update-board-dialog.component';
 import { SkeletonLoaderComponent } from './components/skeleton-loader/skeleton-loader.component';
 import { BoardNavbarComponent } from './components/board-navbar/board-navbar.component';
+import { ListComponent } from './components/list/list.component';
+import { CardPreviewComponent } from './components/card-preview/card-preview.component';
 
 @NgModule({
   declarations: [
@@ -29,6 +31,8 @@ import { BoardNavbarComponent } from './components/board-navbar/board-navbar.com
     UpdateBoardDialogComponent,
     SkeletonLoaderComponent,
     BoardNavbarComponent,
+    ListComponent,
+    CardPreviewComponent,
   ],
   imports: [
     CommonModule,

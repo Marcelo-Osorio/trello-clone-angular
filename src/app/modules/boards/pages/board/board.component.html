@@ -17,24 +17,33 @@
       (boardNameChange)="onBoardNameChange($event)"
     ></app-board-navbar>
 
-    <div class="flex grow items-start w-full h-full overflow-x-auto gap-3 pt-3">
-      <!-- List placeholders (ListComponent comes in PR-3) -->
+    <div class="flex grow items-start w-full h-full overflow-x-auto gap-3 pt-3" cdkDropListGroup>
+      <!-- Horizontal list container -->
       <div
-        *ngFor="let list of lists"
-        class="rounded bg-gray-200 w-72 p-2 shrink-0"
+        class="flex items-start gap-3 h-full"
+        cdkDropList
+        cdkDropListOrientation="horizontal"
+        [cdkDropListData]="lists"
+        (cdkDropListDropped)="onListDrop($event)"
       >
-        <h3 class="text-sm font-bold ml-2 py-1">{{ list.title }}</h3>
-        <div class="text-sm mt-2 min-h-[2.5rem]">
-          <div
-            *ngFor="let card of list.cards"
-            class="bg-white shadow p-2 rounded mt-2 border-b border-x-gray-300 cursor-pointer hover:bg-gray-100"
-          >
-            {{ card.title }}
-          </div>
+        <div
+          *ngFor="let list of lists; let i = index"
+          cdkDrag
+          class="h-full"
+        >
+          <app-list
+            [list]="list"
+            [listIndex]="i"
+            (cardDropped)="onCardDrop($event, list)"
+            (addCard)="onAddCard($event)"
+            (archiveList)="onArchiveList($event)"
+            (archiveAllCards)="onArchiveAllCards($event)"
+            (cardClick)="onCardClick($event)"
+          ></app-list>
         </div>
       </div>
 
-      <!-- Add list placeholder (comes in PR-3) -->
+      <!-- Add list placeholder (comes in PR-5 or later) -->
       <div class="shrink-0">
         <button
           class="bg-white/30 hover:bg-white/50 text-white rounded px-4 py-2 text-sm font-medium transition-colors"

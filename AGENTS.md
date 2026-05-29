@@ -23,7 +23,6 @@ To refresh the local file, run `postman_getCollection` via MCP and write the res
 - **Component selector prefix**: `app` (elements use `kebab-case`, attributes use `camelCase`)
 - **Component default style**: SCSS (set in `angular.json` schematics)
 - **All new components** must use SCSS style via `ng generate component ... --style=scss` or the schematic default
-- **HTML templates** are inline in `.ts` files by default (not separate `.html` files)
 - **Tailwind CSS** is configured with `@tailwindcss/forms` plugin — use utility classes in component SCSS
 
 ## Architecture

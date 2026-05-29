@@ -1,0 +1,99 @@
+<div class="rounded bg-gray-200 w-72 shrink-0 flex flex-col max-h-full">
+  <!-- List header -->
+  <div class="flex items-center justify-between px-2 pt-2 pb-1">
+    <h3 class="text-sm font-bold px-1 py-1 flex-1 truncate">{{ list.title }}</h3>
+    <div class="relative">
+      <button
+        (click)="toggleMenu()"
+        class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-300 transition-colors text-gray-500"
+        type="button"
+        aria-label="List options"
+      >
+        <fa-icon [icon]="faEllipsis"></fa-icon>
+      </button>
+      <!-- Dropdown menu -->
+      <div
+        *ngIf="menuOpen"
+        class="absolute right-0 top-8 bg-white rounded shadow-lg border border-gray-200 z-10 w-48 py-1"
+      >
+        <button
+          (click)="onArchiveAllCards()"
+          class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+          type="button"
+        >
+          Archive all cards
+        </button>
+        <button
+          (click)="onArchiveList()"
+          class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors"
+          type="button"
+        >
+          Archive list
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <hr class="border-gray-300 mx-2" />
+
+  <!-- Cards container (cdkDropList) -->
+  <div
+    class="flex-1 overflow-y-auto px-2 py-1 min-h-[8px]"
+    cdkDropList
+    [cdkDropListData]="cards"
+    (cdkDropListDropped)="onCardDrop($event)"
+  >
+    <app-card-preview
+      *ngFor="let card of cards"
+      [card]="card"
+      (cardClick)="onCardClick($event)"
+      cdkDrag
+      class="block mt-2 first:mt-0"
+    ></app-card-preview>
+
+    <!-- Drag placeholder -->
+    <div *cdkDragPlaceholder class="bg-gray-300 rounded border-2 border-dashed border-gray-400 min-h-[40px] mb-2"></div>
+  </div>
+
+  <!-- Add card section -->
+  <div class="px-2 pb-2 pt-1">
+    <ng-container *ngIf="!showAddForm; else addForm">
+      <button
+        (click)="toggleAddForm()"
+        class="flex items-center gap-1.5 w-full px-2 py-1.5 rounded text-sm text-gray-500 hover:bg-gray-300 hover:text-gray-700 transition-colors"
+        type="button"
+      >
+        <fa-icon [icon]="faPlus" class="text-xs"></fa-icon>
+        <span>Add a card</span>
+      </button>
+    </ng-container>
+    <ng-template #addForm>
+      <div class="space-y-2">
+        <textarea
+          [(ngModel)]="newCardTitle"
+          (keydown)="onAddKeydown($event)"
+          placeholder="Enter a title for this card..."
+          class="w-full p-2 text-sm border border-gray-300 rounded shadow-sm resize-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+          rows="3"
+          autofocus
+        ></textarea>
+        <div class="flex items-center gap-2">
+          <button
+            (click)="submitCard()"
+            class="px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+            type="button"
+          >
+            Add card
+          </button>
+          <button
+            (click)="cancelAdd()"
+            class="px-2 py-1.5 text-gray-500 hover:text-gray-700 transition-colors"
+            type="button"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </ng-template>
+  </div>
+</div>

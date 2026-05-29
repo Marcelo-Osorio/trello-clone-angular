@@ -3,11 +3,16 @@ import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { DragDropModule } from '@angular/cdk/drag-drop';
+import { DialogModule } from '@angular/cdk/dialog';
 import { of, throwError } from 'rxjs';
 
 import { BoardComponent } from './board.component';
 import { BoardNavbarComponent } from '@boards/components/board-navbar/board-navbar.component';
+import { ListComponent } from '@boards/components/list/list.component';
+import { CardPreviewComponent } from '@boards/components/card-preview/card-preview.component';
 import { BoardsService } from '@services/boards.service';
+import { CardsService } from '@services/cards.service';
 import { ArchivedService } from '@services/archived.service';
 import { Board } from '@models/board.model';
 import { List } from '@models/list.model';
@@ -17,6 +22,7 @@ describe('BoardComponent', () => {
   let component: BoardComponent;
   let fixture: ComponentFixture<BoardComponent>;
   let boardsServiceSpy: jasmine.SpyObj<BoardsService>;
+  let cardsServiceSpy: jasmine.SpyObj<CardsService>;
   let archivedServiceSpy: jasmine.SpyObj<ArchivedService>;
 
   const mockLists: List[] = [
@@ -83,7 +89,8 @@ describe('BoardComponent', () => {
 
   function setup(routeParamId: string, boardResponse: Board | null = mockBoard, error = false) {
     boardsServiceSpy = jasmine.createSpyObj('BoardsService', ['getBoardById', 'updateBoard']);
-    archivedServiceSpy = jasmine.createSpyObj('ArchivedService', ['getArchived', 'cleanStale']);
+    cardsServiceSpy = jasmine.createSpyObj('CardsService', ['createCard', 'updateCard']);
+    archivedServiceSpy = jasmine.createSpyObj('ArchivedService', ['getArchived', 'cleanStale', 'archiveCard', 'archiveList']);
     archivedServiceSpy.getArchived.and.returnValue({ lists: [], cards: [] });
 
     if (error) {
@@ -93,8 +100,8 @@ describe('BoardComponent', () => {
     }
 
     TestBed.configureTestingModule({
-      imports: [RouterTestingModule, FormsModule, FontAwesomeModule],
-      declarations: [BoardComponent, BoardNavbarComponent],
+      imports: [RouterTestingModule, FormsModule, FontAwesomeModule, DragDropModule, DialogModule],
+      declarations: [BoardComponent, BoardNavbarComponent, ListComponent, CardPreviewComponent],
       providers: [
         {
           provide: ActivatedRoute,
@@ -103,6 +110,7 @@ describe('BoardComponent', () => {
           },
         },
         { provide: BoardsService, useValue: boardsServiceSpy },
+        { provide: CardsService, useValue: cardsServiceSpy },
         { provide: ArchivedService, useValue: archivedServiceSpy },
       ],
     }).compileComponents();
@@ -145,7 +153,7 @@ describe('BoardComponent', () => {
     });
 
     it('should filter out archived lists from the board view', () => {
-      archivedServiceSpy = jasmine.createSpyObj('ArchivedService', ['getArchived', 'cleanStale']);
+      archivedServiceSpy = jasmine.createSpyObj('ArchivedService', ['getArchived', 'cleanStale', 'archiveCard', 'archiveList']);
       archivedServiceSpy.getArchived.and.returnValue({
         lists: [{ ...mockLists[1] }],
         cards: [],
@@ -153,11 +161,12 @@ describe('BoardComponent', () => {
 
       boardsServiceSpy = jasmine.createSpyObj('BoardsService', ['getBoardById', 'updateBoard']);
       boardsServiceSpy.getBoardById.and.returnValue(of(mockBoard));
+      cardsServiceSpy = jasmine.createSpyObj('CardsService', ['createCard', 'updateCard']);
 
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
-        imports: [RouterTestingModule, FormsModule, FontAwesomeModule],
-        declarations: [BoardComponent, BoardNavbarComponent],
+        imports: [RouterTestingModule, FormsModule, FontAwesomeModule, DragDropModule, DialogModule],
+        declarations: [BoardComponent, BoardNavbarComponent, ListComponent, CardPreviewComponent],
         providers: [
           {
             provide: ActivatedRoute,
@@ -166,6 +175,7 @@ describe('BoardComponent', () => {
             },
           },
           { provide: BoardsService, useValue: boardsServiceSpy },
+          { provide: CardsService, useValue: cardsServiceSpy },
           { provide: ArchivedService, useValue: archivedServiceSpy },
         ],
       }).compileComponents();
@@ -179,7 +189,7 @@ describe('BoardComponent', () => {
     });
 
     it('should filter out archived cards from lists', () => {
-      archivedServiceSpy = jasmine.createSpyObj('ArchivedService', ['getArchived', 'cleanStale']);
+      archivedServiceSpy = jasmine.createSpyObj('ArchivedService', ['getArchived', 'cleanStale', 'archiveCard', 'archiveList']);
       archivedServiceSpy.getArchived.and.returnValue({
         lists: [],
         cards: [{ ...mockCards[0] }],
@@ -187,11 +197,12 @@ describe('BoardComponent', () => {
 
       boardsServiceSpy = jasmine.createSpyObj('BoardsService', ['getBoardById', 'updateBoard']);
       boardsServiceSpy.getBoardById.and.returnValue(of(mockBoard));
+      cardsServiceSpy = jasmine.createSpyObj('CardsService', ['createCard', 'updateCard']);
 
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
-        imports: [RouterTestingModule, FormsModule, FontAwesomeModule],
-        declarations: [BoardComponent, BoardNavbarComponent],
+        imports: [RouterTestingModule, FormsModule, FontAwesomeModule, DragDropModule, DialogModule],
+        declarations: [BoardComponent, BoardNavbarComponent, ListComponent, CardPreviewComponent],
         providers: [
           {
             provide: ActivatedRoute,
@@ -200,6 +211,7 @@ describe('BoardComponent', () => {
             },
           },
           { provide: BoardsService, useValue: boardsServiceSpy },
+          { provide: CardsService, useValue: cardsServiceSpy },
           { provide: ArchivedService, useValue: archivedServiceSpy },
         ],
       }).compileComponents();
@@ -226,14 +238,15 @@ describe('BoardComponent', () => {
       boardsServiceSpy = jasmine.createSpyObj('BoardsService', ['getBoardById', 'updateBoard']);
       boardsServiceSpy.getBoardById.and.returnValue(of(mockBoard));
       boardsServiceSpy.updateBoard.and.returnValue(of({ ...mockBoard, title: 'New Name' }));
+      cardsServiceSpy = jasmine.createSpyObj('CardsService', ['createCard', 'updateCard']);
 
-      archivedServiceSpy = jasmine.createSpyObj('ArchivedService', ['getArchived', 'cleanStale']);
+      archivedServiceSpy = jasmine.createSpyObj('ArchivedService', ['getArchived', 'cleanStale', 'archiveCard', 'archiveList']);
       archivedServiceSpy.getArchived.and.returnValue({ lists: [], cards: [] });
 
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
-        imports: [RouterTestingModule, FormsModule, FontAwesomeModule],
-        declarations: [BoardComponent, BoardNavbarComponent],
+        imports: [RouterTestingModule, FormsModule, FontAwesomeModule, DragDropModule, DialogModule],
+        declarations: [BoardComponent, BoardNavbarComponent, ListComponent, CardPreviewComponent],
         providers: [
           {
             provide: ActivatedRoute,
@@ -242,6 +255,7 @@ describe('BoardComponent', () => {
             },
           },
           { provide: BoardsService, useValue: boardsServiceSpy },
+          { provide: CardsService, useValue: cardsServiceSpy },
           { provide: ArchivedService, useValue: archivedServiceSpy },
         ],
       }).compileComponents();
@@ -254,6 +268,79 @@ describe('BoardComponent', () => {
 
       expect(boardsServiceSpy.updateBoard).toHaveBeenCalledWith(1, { title: 'New Name' });
       expect(component.board!.title).toBe('New Name');
+    });
+  });
+
+  describe('add card', () => {
+    it('should call cardsService.createCard when onAddCard is called', () => {
+      setup('1');
+      fixture.detectChanges();
+
+      const newCard: Card = {
+        id: 99,
+        title: 'New Card',
+        position: 2,
+        creationAt: '2026-01-01',
+        updatedAt: '2026-01-01',
+      };
+      cardsServiceSpy.createCard.and.returnValue(of(newCard));
+
+      component.onAddCard({ listId: 1, title: 'New Card' });
+
+      expect(cardsServiceSpy.createCard).toHaveBeenCalledWith({
+        title: 'New Card',
+        listId: 1,
+        boardId: 1,
+        position: 2,
+        description: '',
+      });
+      expect(component.lists[0].cards!.length).toBe(3);
+    });
+
+    it('should not call createCard when board is null', () => {
+      setup('1');
+      fixture.detectChanges();
+      component.board = null;
+
+      component.onAddCard({ listId: 1, title: 'New Card' });
+
+      expect(cardsServiceSpy.createCard).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('archive list', () => {
+    it('should archive list and remove from view', () => {
+      setup('1');
+      fixture.detectChanges();
+
+      component.onArchiveList(2);
+
+      expect(archivedServiceSpy.archiveList).toHaveBeenCalled();
+      expect(component.lists.length).toBe(1);
+      expect(component.lists[0].id).toBe(1);
+    });
+  });
+
+  describe('archive all cards', () => {
+    it('should archive all cards in a list', () => {
+      setup('1');
+      fixture.detectChanges();
+
+      component.onArchiveAllCards(1);
+
+      expect(archivedServiceSpy.archiveCard).toHaveBeenCalledTimes(2);
+      expect(component.lists[0].cards!.length).toBe(0);
+    });
+  });
+
+  describe('card click', () => {
+    it('should log card id when card is clicked (stub for PR-4)', () => {
+      setup('1');
+      fixture.detectChanges();
+
+      spyOn(console, 'log');
+      component.onCardClick(42);
+      expect(console.log).toHaveBeenCalledWith('Card clicked:', 42);
     });
   });
 });
