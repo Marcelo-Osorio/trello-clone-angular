@@ -10,6 +10,7 @@ import { ArchivedService } from '@services/archived.service';
 import { Board } from '@models/board.model';
 import { Card } from '@models/card.model';
 import { List } from '@models/list.model';
+import { CardModalComponent } from '../../components/card-modal/card-modal.component';
 
 @Component({
   selector: 'app-board',
@@ -161,8 +162,48 @@ export class BoardComponent implements OnInit, OnDestroy {
   }
 
   onCardClick(cardId: number): void {
-    // Card modal will be implemented in PR-4
-    console.log('Card clicked:', cardId);
+    if (!this.board) return;
+
+    // Find the card and its parent list
+    let card: Card | undefined;
+    let listTitle = '';
+    for (const list of this.lists) {
+      const found = (list.cards || []).find((c) => c.id === cardId);
+      if (found) {
+        card = found;
+        listTitle = list.title;
+        break;
+      }
+    }
+
+    if (!card) return;
+
+    this.dialog
+      .open<Card>(CardModalComponent, {
+        data: {
+          card,
+          board: this.board,
+          listTitle,
+        },
+        width: '800px',
+        maxHeight: '90vh',
+      })
+      .closed.subscribe((updatedCard) => {
+        if (updatedCard) {
+          this.refreshCardInLists(updatedCard);
+        }
+      });
+  }
+
+  private refreshCardInLists(updatedCard: Card): void {
+    for (const list of this.lists) {
+      const cards = list.cards || [];
+      const idx = cards.findIndex((c) => c.id === updatedCard.id);
+      if (idx !== -1) {
+        cards[idx] = updatedCard;
+        break;
+      }
+    }
   }
 
   private loadBoard(id: number): void {

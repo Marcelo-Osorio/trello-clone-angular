@@ -1,0 +1,148 @@
+<div class="mt-4">
+  <!-- Header: expand toggle + title + progress -->
+  <div class="flex items-center gap-2 mb-2">
+    <button
+      (click)="toggleExpanded()"
+      class="w-5 h-5 flex items-center justify-center text-gray-500 hover:text-gray-700"
+      type="button"
+      aria-label="Toggle checklist group"
+    >
+      <fa-icon [icon]="expanded ? faChevronDown : faChevronRight" class="text-xs"></fa-icon>
+    </button>
+
+    <div class="flex-1">
+      <ng-container *ngIf="!editingTitle; else titleEdit">
+        <h4
+          class="text-sm font-semibold text-gray-800 cursor-pointer hover:bg-gray-100 rounded px-1 py-0.5"
+          (click)="startEditTitle()"
+        >
+          {{ group.groupName }}
+        </h4>
+      </ng-container>
+      <ng-template #titleEdit>
+        <input
+          type="text"
+          [(ngModel)]="titleDraft"
+          (blur)="saveTitle()"
+          (keydown)="onTitleKeydown($event)"
+          class="w-full text-sm font-semibold px-1 py-0.5 border border-blue-400 rounded focus:ring-2 focus:ring-blue-400 focus:outline-none"
+          autofocus
+        />
+      </ng-template>
+    </div>
+
+    <button
+      (click)="deleteGroup()"
+      class="text-gray-400 hover:text-red-500 transition-colors p-1"
+      type="button"
+      aria-label="Delete checklist group"
+    >
+      <fa-icon [icon]="faTrash" class="text-xs"></fa-icon>
+    </button>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="flex items-center gap-2 mb-3 ml-7">
+    <span class="text-xs text-gray-500 w-8 text-right">{{ progressPercent }}%</span>
+    <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+      <div
+        class="h-full rounded-full transition-all duration-200"
+        [ngClass]="progressPercent === 100 ? 'bg-green-500' : 'bg-blue-500'"
+        [style.width.%]="progressPercent"
+      ></div>
+    </div>
+    <span class="text-xs text-gray-500">{{ checkedItems }}/{{ totalItems }}</span>
+  </div>
+
+  <!-- Items (when expanded) -->
+  <div *ngIf="expanded" class="ml-7">
+    <!-- Hide checked toggle -->
+    <div class="mb-2">
+      <button
+        (click)="toggleHideChecked()"
+        class="text-xs text-gray-500 hover:text-gray-700 hover:underline"
+        type="button"
+      >
+        {{ hideChecked ? 'Show checked items' : 'Hide checked items' }}
+      </button>
+    </div>
+
+    <!-- Checklist items -->
+    <div class="space-y-1">
+      <div
+        *ngFor="let item of visibleItems; let i = index"
+        class="flex items-start gap-2 group"
+      >
+        <button
+          (click)="toggleItem(i)"
+          class="mt-0.5 text-gray-400 hover:text-gray-600 shrink-0"
+          type="button"
+        >
+          <fa-icon [icon]="item.checked ? faCheckSquare : faSquare"></fa-icon>
+        </button>
+
+        <ng-container *ngIf="editingItemIndex !== i; else itemEdit">
+          <span
+            class="text-sm flex-1 cursor-pointer hover:bg-gray-100 rounded px-1 py-0.5 break-words"
+            [ngClass]="item.checked ? 'line-through text-gray-400' : 'text-gray-700'"
+            (click)="startEditItem(i)"
+          >
+            {{ item.item }}
+          </span>
+        </ng-container>
+        <ng-template #itemEdit>
+          <input
+            type="text"
+            [(ngModel)]="itemDraft"
+            (blur)="saveItem()"
+            (keydown)="onItemKeydown($event)"
+            class="flex-1 text-sm px-1 py-0.5 border border-blue-400 rounded focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            autofocus
+          />
+        </ng-template>
+      </div>
+    </div>
+
+    <!-- Add item -->
+    <div class="mt-2">
+      <ng-container *ngIf="!addingItem; else addItemForm">
+        <button
+          (click)="startAddItem()"
+          class="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded px-2 py-1 transition-colors"
+          type="button"
+        >
+          <fa-icon [icon]="faPlus" class="text-xs"></fa-icon>
+          <span>Add an item</span>
+        </button>
+      </ng-container>
+      <ng-template #addItemForm>
+        <div class="space-y-1">
+          <input
+            type="text"
+            [(ngModel)]="newItemText"
+            (keydown)="onNewItemKeydown($event)"
+            placeholder="Enter item text..."
+            class="w-full text-sm px-2 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:outline-none"
+            autofocus
+          />
+          <div class="flex items-center gap-2">
+            <button
+              (click)="submitNewItem()"
+              class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
+              type="button"
+            >
+              Add
+            </button>
+            <button
+              (click)="cancelAddItem()"
+              class="px-2 py-1 text-gray-500 text-xs hover:text-gray-700 transition-colors"
+              type="button"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

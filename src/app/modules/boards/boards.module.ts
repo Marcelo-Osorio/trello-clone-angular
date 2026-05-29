@@ -20,6 +20,11 @@ import { SkeletonLoaderComponent } from './components/skeleton-loader/skeleton-l
 import { BoardNavbarComponent } from './components/board-navbar/board-navbar.component';
 import { ListComponent } from './components/list/list.component';
 import { CardPreviewComponent } from './components/card-preview/card-preview.component';
+import { CardModalComponent } from './components/card-modal/card-modal.component';
+import { LabelsModalComponent } from './components/labels-modal/labels-modal.component';
+import { DueDateModalComponent } from './components/due-date-modal/due-date-modal.component';
+import { ChecklistGroupComponent } from './components/checklist-group/checklist-group.component';
+import { MemberPickerComponent } from './components/member-picker/member-picker.component';
 
 @NgModule({
   declarations: [
@@ -33,6 +38,11 @@ import { CardPreviewComponent } from './components/card-preview/card-preview.com
     BoardNavbarComponent,
     ListComponent,
     CardPreviewComponent,
+    CardModalComponent,
+    LabelsModalComponent,
+    DueDateModalComponent,
+    ChecklistGroupComponent,
+    MemberPickerComponent,
   ],
   imports: [
     CommonModule,

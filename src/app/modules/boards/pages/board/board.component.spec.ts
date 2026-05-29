@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { DialogModule } from '@angular/cdk/dialog';
+import { DialogModule, Dialog } from '@angular/cdk/dialog';
 import { of, throwError } from 'rxjs';
 
 import { BoardComponent } from './board.component';
@@ -24,6 +24,7 @@ describe('BoardComponent', () => {
   let boardsServiceSpy: jasmine.SpyObj<BoardsService>;
   let cardsServiceSpy: jasmine.SpyObj<CardsService>;
   let archivedServiceSpy: jasmine.SpyObj<ArchivedService>;
+  let dialogSpy: jasmine.SpyObj<Dialog>;
 
   const mockLists: List[] = [
     {
@@ -92,6 +93,10 @@ describe('BoardComponent', () => {
     cardsServiceSpy = jasmine.createSpyObj('CardsService', ['createCard', 'updateCard']);
     archivedServiceSpy = jasmine.createSpyObj('ArchivedService', ['getArchived', 'cleanStale', 'archiveCard', 'archiveList']);
     archivedServiceSpy.getArchived.and.returnValue({ lists: [], cards: [] });
+    dialogSpy = jasmine.createSpyObj('Dialog', ['open']);
+    dialogSpy.open.and.returnValue({
+      closed: { subscribe: jasmine.createSpy('subscribe') },
+    } as any);
 
     if (error) {
       boardsServiceSpy.getBoardById.and.returnValue(throwError(() => new Error('API Error')));
@@ -106,12 +111,13 @@ describe('BoardComponent', () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            params: of(convertToParamMap({ id: routeParamId })),
+            params: of({ id: routeParamId }),
           },
         },
         { provide: BoardsService, useValue: boardsServiceSpy },
         { provide: CardsService, useValue: cardsServiceSpy },
         { provide: ArchivedService, useValue: archivedServiceSpy },
+        { provide: Dialog, useValue: dialogSpy },
       ],
     }).compileComponents();
 
@@ -171,12 +177,13 @@ describe('BoardComponent', () => {
           {
             provide: ActivatedRoute,
             useValue: {
-              params: of(convertToParamMap({ id: '1' })),
+              params: of({ id: '1' }),
             },
           },
           { provide: BoardsService, useValue: boardsServiceSpy },
           { provide: CardsService, useValue: cardsServiceSpy },
           { provide: ArchivedService, useValue: archivedServiceSpy },
+          { provide: Dialog, useValue: jasmine.createSpyObj('Dialog', ['open']) },
         ],
       }).compileComponents();
 
@@ -207,12 +214,13 @@ describe('BoardComponent', () => {
           {
             provide: ActivatedRoute,
             useValue: {
-              params: of(convertToParamMap({ id: '1' })),
+              params: of({ id: '1' }),
             },
           },
           { provide: BoardsService, useValue: boardsServiceSpy },
           { provide: CardsService, useValue: cardsServiceSpy },
           { provide: ArchivedService, useValue: archivedServiceSpy },
+          { provide: Dialog, useValue: jasmine.createSpyObj('Dialog', ['open']) },
         ],
       }).compileComponents();
 
@@ -251,12 +259,13 @@ describe('BoardComponent', () => {
           {
             provide: ActivatedRoute,
             useValue: {
-              params: of(convertToParamMap({ id: '1' })),
+              params: of({ id: '1' }),
             },
           },
           { provide: BoardsService, useValue: boardsServiceSpy },
           { provide: CardsService, useValue: cardsServiceSpy },
           { provide: ArchivedService, useValue: archivedServiceSpy },
+          { provide: Dialog, useValue: jasmine.createSpyObj('Dialog', ['open']) },
         ],
       }).compileComponents();
 
@@ -334,13 +343,32 @@ describe('BoardComponent', () => {
   });
 
   describe('card click', () => {
-    it('should log card id when card is clicked (stub for PR-4)', () => {
+    it('should open card modal dialog when card is clicked', () => {
       setup('1');
       fixture.detectChanges();
 
-      spyOn(console, 'log');
-      component.onCardClick(42);
-      expect(console.log).toHaveBeenCalledWith('Card clicked:', 42);
+      component.onCardClick(10);
+      expect(dialogSpy.open).toHaveBeenCalled();
+    });
+
+    it('should not open dialog if card is not found', () => {
+      setup('1');
+      fixture.detectChanges();
+
+      component.onCardClick(9999);
+      expect(dialogSpy.open).not.toHaveBeenCalled();
+    });
+
+    it('should not open dialog if board is null', () => {
+      setup('1');
+      fixture.detectChanges();
+      component.board = null;
+
+      component.onCardClick(10);
+      // dialog.open should have been called once for the first detectChanges, not again
+      const callCount = dialogSpy.open.calls.count();
+      component.onCardClick(10);
+      expect(dialogSpy.open.calls.count()).toBe(callCount);
     });
   });
 });
