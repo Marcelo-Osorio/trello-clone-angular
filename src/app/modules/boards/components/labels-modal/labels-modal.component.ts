@@ -32,6 +32,7 @@ const COLOR_BG_MAP: Record<LabelColor, string> = {
 export class LabelsModalComponent {
   faCheck = faCheck;
   faClose = faClose;
+  availableColors : LabelColor[] = ['green', 'yellow', 'orange', 'red', 'purple', 'blue'];
 
   labels: Label[] = [];
   editingIndex: number | null = null;
