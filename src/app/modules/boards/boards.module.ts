@@ -25,6 +25,9 @@ import { LabelsModalComponent } from './components/labels-modal/labels-modal.com
 import { DueDateModalComponent } from './components/due-date-modal/due-date-modal.component';
 import { ChecklistGroupComponent } from './components/checklist-group/checklist-group.component';
 import { MemberPickerComponent } from './components/member-picker/member-picker.component';
+import { SearchPanelComponent } from './components/search-panel/search-panel.component';
+import { ArchivedModalComponent } from './components/archived-modal/archived-modal.component';
+import { InviteDialogComponent } from './components/invite-dialog/invite-dialog.component';
 
 @NgModule({
   declarations: [
@@ -43,6 +46,9 @@ import { MemberPickerComponent } from './components/member-picker/member-picker.
     DueDateModalComponent,
     ChecklistGroupComponent,
     MemberPickerComponent,
+    SearchPanelComponent,
+    ArchivedModalComponent,
+    InviteDialogComponent,
   ],
   imports: [
     CommonModule,
