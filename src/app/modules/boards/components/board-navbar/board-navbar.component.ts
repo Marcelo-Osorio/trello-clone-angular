@@ -16,6 +16,8 @@ import { Board } from '@models/board.model';
 export class BoardNavbarComponent {
   @Input() board!: Board;
   @Output() boardNameChange = new EventEmitter<string>();
+  @Output() searchToggle = new EventEmitter<void>();
+  @Output() archived = new EventEmitter<void>();
 
   faHome = faHome;
   faUserPlus = faUserPlus;
@@ -52,14 +54,15 @@ export class BoardNavbarComponent {
   }
 
   onInvite(): void {
-    console.log('Invite dialog - stub');
+    // Invite dialog handled by parent via dialog
   }
 
   onArchived(): void {
-    console.log('Archived modal - stub');
+    this.archived.emit();
   }
 
   onSearchToggle(): void {
     this.searchOpen = !this.searchOpen;
+    this.searchToggle.emit();
   }
 }

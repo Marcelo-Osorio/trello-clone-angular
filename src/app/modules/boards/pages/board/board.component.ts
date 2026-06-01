@@ -7,10 +7,12 @@ import { Subscription } from 'rxjs';
 import { BoardsService } from '@services/boards.service';
 import { CardsService } from '@services/cards.service';
 import { ArchivedService } from '@services/archived.service';
+import { SearchService } from '@services/search.service';
 import { Board } from '@models/board.model';
 import { Card } from '@models/card.model';
 import { List } from '@models/list.model';
 import { CardModalComponent } from '../../components/card-modal/card-modal.component';
+import { ArchivedModalComponent } from '../../components/archived-modal/archived-modal.component';
 
 @Component({
   selector: 'app-board',
@@ -29,6 +31,7 @@ export class BoardComponent implements OnInit, OnDestroy {
   lists: List[] = [];
   loading = true;
   error: string | null = null;
+  searchOpen = false;
 
   private paramsSub: Subscription | null = null;
 
@@ -38,6 +41,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     private boardsService: BoardsService,
     private cardsService: CardsService,
     private archivedService: ArchivedService,
+    private searchService: SearchService,
     private dialog: Dialog,
   ) {}
 
@@ -63,6 +67,45 @@ export class BoardComponent implements OnInit, OnDestroy {
         this.board = updated;
       },
     });
+  }
+
+  onSearchToggle(): void {
+    this.searchOpen = !this.searchOpen;
+    if (!this.searchOpen) {
+      this.searchService.clearFilter();
+    }
+  }
+
+  onArchived(): void {
+    if (!this.board) return;
+    this.dialog
+      .open<void>(ArchivedModalComponent, {
+        data: {
+          boardId: this.board.id,
+          lists: this.lists,
+        },
+      })
+      .closed.subscribe(() => {
+        // Reload board after recovery
+        if (this.board) {
+          this.loadBoard(this.board.id);
+        }
+      });
+  }
+
+  onSearchClose(): void {
+    this.searchOpen = false;
+    this.searchService.clearFilter();
+  }
+
+  get filteredLists(): List[] {
+    if (!this.searchService.getActiveFilter()) {
+      return this.lists;
+    }
+    return this.lists.map((list) => ({
+      ...list,
+      cards: this.searchService.filterCards(list.cards || []),
+    }));
   }
 
   get cardDropListIds(): string[] {

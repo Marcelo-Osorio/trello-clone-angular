@@ -15,6 +15,8 @@
     <app-board-navbar
       [board]="board"
       (boardNameChange)="onBoardNameChange($event)"
+      (searchToggle)="onSearchToggle()"
+      (archived)="onArchived()"
     ></app-board-navbar>
 
     <div class="flex grow items-start w-full h-full overflow-x-auto gap-3 pt-3">
@@ -27,7 +29,7 @@
         (cdkDropListDropped)="onListDrop($event)"
       >
         <div
-          *ngFor="let list of lists; let i = index"
+          *ngFor="let list of filteredLists; let i = index"
           cdkDrag
           class="h-full"
         >
@@ -44,7 +46,7 @@
         </div>
       </div>
 
-      <!-- Add list placeholder (comes in PR-5 or later) -->
+      <!-- Add list placeholder -->
       <div class="shrink-0">
         <button
           class="bg-white/30 hover:bg-white/50 text-white rounded px-4 py-2 text-sm font-medium transition-colors"
@@ -55,4 +57,11 @@
       </div>
     </div>
   </div>
+
+  <!-- Search panel (slides in from right) -->
+  <app-search-panel
+    *ngIf="searchOpen && board"
+    [board]="board"
+    (close)="onSearchClose()"
+  ></app-search-panel>
 </div>
