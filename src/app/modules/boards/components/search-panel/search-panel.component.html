@@ -1,0 +1,128 @@
+<div class="fixed top-0 right-0 h-full w-80 bg-white shadow-xl z-50 flex flex-col">
+  <!-- Header -->
+  <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+    <h2 class="text-sm font-semibold text-gray-800">Search & Filter</h2>
+    <button
+      (click)="onClose()"
+      class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 transition-colors"
+      type="button"
+      aria-label="Close search panel"
+    >
+      <fa-icon [icon]="faClose" class="text-gray-500 text-sm"></fa-icon>
+    </button>
+  </div>
+
+  <!-- Active filter indicator -->
+  <div *ngIf="activeFilter" class="px-4 py-2 bg-blue-50 border-b border-blue-100">
+    <div class="flex items-center gap-2">
+      <span class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+        {{ activeFilterLabel }}
+        <button
+          (click)="onClearFilter()"
+          class="ml-1 hover:text-blue-900"
+          type="button"
+          aria-label="Clear filter"
+        >
+          <fa-icon [icon]="faClose" class="text-xs"></fa-icon>
+        </button>
+      </span>
+    </div>
+    <div *ngIf="resultCount >= 0" class="mt-1 text-xs text-gray-500">
+      {{ resultCount }} search result{{ resultCount !== 1 ? 's' : '' }}
+    </div>
+  </div>
+
+  <div class="flex-1 overflow-y-auto px-4 py-3 space-y-5">
+    <!-- Search term input -->
+    <div>
+      <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
+        <fa-icon [icon]="faMagnifyingGlass" class="mr-1 text-gray-400"></fa-icon>
+        Search
+      </label>
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (keydown)="onSearchKeydown($event)"
+        placeholder="Search cards..."
+        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      />
+    </div>
+
+    <!-- Label filter -->
+    <div>
+      <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
+        <fa-icon [icon]="faTag" class="mr-1 text-gray-400"></fa-icon>
+        Filter by Label
+      </label>
+      <div class="flex flex-wrap gap-2">
+        <button
+          *ngFor="let label of labelColors"
+          (click)="onLabelClick({ color: label.color, labelName: '' })"
+          class="w-8 h-8 rounded-md {{ label.bgClass }} hover:ring-2 hover:ring-offset-1 hover:ring-gray-400 transition-all"
+          [attr.aria-label]="'Filter by ' + label.color + ' label'"
+          type="button"
+        ></button>
+      </div>
+    </div>
+
+    <!-- Member filter -->
+    <div class="relative">
+      <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
+        <fa-icon [icon]="faUser" class="mr-1 text-gray-400"></fa-icon>
+        Filter by Member
+      </label>
+      <input
+        type="text"
+        [(ngModel)]="memberSearchTerm"
+        (keydown)="onMemberKeydown($event)"
+        placeholder="Type @ to mention..."
+        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      />
+      <div
+        *ngIf="showMemberPopup && board?.members?.length"
+        class="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto"
+      >
+        <button
+          *ngFor="let member of board.members"
+          (click)="onMemberSelect(member.name)"
+          class="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
+          type="button"
+        >
+          <img
+            *ngIf="member.avatar"
+            [src]="member.avatar"
+            [alt]="member.name"
+            class="w-6 h-6 rounded-full"
+          />
+          <span>{{ member.name }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Due date chips -->
+    <div *ngIf="allDueDates.length > 0">
+      <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
+        <fa-icon [icon]="faCalendarDay" class="mr-1 text-gray-400"></fa-icon>
+        Filter by Due Date
+      </label>
+      <div class="flex flex-wrap gap-1.5">
+        <button
+          *ngFor="let date of visibleDueDates"
+          (click)="onDueDateClick(date)"
+          class="px-2.5 py-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
+          type="button"
+        >
+          {{ date }}
+        </button>
+        <button
+          *ngIf="hasMoreDueDates"
+          (click)="showAllDueDates()"
+          class="px-2.5 py-1 text-xs bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-full transition-colors font-medium"
+          type="button"
+        >
+          +{{ allDueDates.length - MAX_VISIBLE_DATES }} more
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
