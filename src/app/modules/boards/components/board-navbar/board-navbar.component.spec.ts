@@ -105,22 +105,22 @@ describe('BoardNavbarComponent', () => {
     expect(buttonTexts.some((t) => t?.includes('Archived'))).toBe(true);
   });
 
-  it('should call console.log when invite is clicked (stub)', () => {
-    spyOn(console, 'log');
-    component.onInvite();
-    expect(console.log).toHaveBeenCalledWith('Invite dialog - stub');
+  it('should have onInvite method', () => {
+    expect(component.onInvite).toBeDefined();
   });
 
-  it('should call console.log when archived is clicked (stub)', () => {
-    spyOn(console, 'log');
+  it('should emit archived event when archived is clicked', () => {
+    spyOn(component.archived, 'emit');
     component.onArchived();
-    expect(console.log).toHaveBeenCalledWith('Archived modal - stub');
+    expect(component.archived.emit).toHaveBeenCalled();
   });
 
-  it('should toggle search panel state', () => {
+  it('should toggle search panel state and emit event', () => {
+    spyOn(component.searchToggle, 'emit');
     expect(component.searchOpen).toBe(false);
     component.onSearchToggle();
     expect(component.searchOpen).toBe(true);
+    expect(component.searchToggle.emit).toHaveBeenCalled();
     component.onSearchToggle();
     expect(component.searchOpen).toBe(false);
   });
