@@ -1,4 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Dialog } from '@angular/cdk/dialog';
 import {
   faHome,
   faUserPlus,
@@ -7,6 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 import { Board } from '@models/board.model';
+import { InviteDialogComponent } from '../invite-dialog/invite-dialog.component';
 
 @Component({
   selector: 'app-board-navbar',
@@ -27,6 +29,8 @@ export class BoardNavbarComponent {
   isEditing = false;
   editName = '';
   searchOpen = false;
+
+  constructor(private dialog: Dialog) {}
 
   startEditing(): void {
     this.isEditing = true;
@@ -54,7 +58,9 @@ export class BoardNavbarComponent {
   }
 
   onInvite(): void {
-    // Invite dialog handled by parent via dialog
+    this.dialog.open<void>(InviteDialogComponent, {
+      data: { boardId: this.board.id },
+    });
   }
 
   onArchived(): void {

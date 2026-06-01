@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
+import { DialogModule } from '@angular/cdk/dialog';
 
 import { BoardNavbarComponent } from './board-navbar.component';
 import { Board } from '@models/board.model';
@@ -21,7 +22,7 @@ describe('BoardNavbarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RouterTestingModule, FontAwesomeModule, FormsModule],
+      imports: [RouterTestingModule, FontAwesomeModule, FormsModule, DialogModule],
       declarations: [BoardNavbarComponent],
     }).compileComponents();
 
