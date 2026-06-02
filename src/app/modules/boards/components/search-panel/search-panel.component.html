@@ -57,7 +57,7 @@
       <div class="flex flex-wrap gap-2">
         <button
           *ngFor="let label of labelColors"
-          (click)="onLabelClick({ color: label.color, labelName: '' })"
+          (click)="onLabelClick({  labelName: '' ,color: label.color})"
           class="w-8 h-8 rounded-md {{ label.bgClass }} hover:ring-2 hover:ring-offset-1 hover:ring-gray-400 transition-all"
           [attr.aria-label]="'Filter by ' + label.color + ' label'"
           type="button"

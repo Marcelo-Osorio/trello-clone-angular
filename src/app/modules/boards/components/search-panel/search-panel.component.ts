@@ -8,7 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 import { Board } from '@models/board.model';
-import { Label } from '@models/card.model';
+import { Label, LabelColor } from '@models/card.model';
 import { SearchService } from '@services/search.service';
 
 @Component({
@@ -32,7 +32,7 @@ export class SearchPanelComponent {
   showAllDatesPopup = false;
   expandedDueDates = false;
 
-  labelColors: { color: string; bgClass: string }[] = [
+  labelColors: { color: LabelColor; bgClass: string }[] = [
     { color: 'green', bgClass: 'bg-green-500' },
     { color: 'yellow', bgClass: 'bg-yellow-400' },
     { color: 'orange', bgClass: 'bg-orange-500' },
@@ -41,7 +41,7 @@ export class SearchPanelComponent {
     { color: 'blue', bgClass: 'bg-blue-500' },
   ];
 
-  private MAX_VISIBLE_DATES = 5;
+  public MAX_VISIBLE_DATES = 5;
 
   constructor(private searchService: SearchService) {}
 
