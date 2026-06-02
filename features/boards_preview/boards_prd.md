@@ -45,4 +45,3 @@ make useful @src\app\modules\boards\pages\boards/  through endpoints board and m
 *  @src\app\modules\layout\components\navbar/ he can click to see his profile in here if he hasn't any profile photo show a default icon of user 
 * A user can update a board by an icon of modify at the right top of every board 
 * It has to be responsive 
-

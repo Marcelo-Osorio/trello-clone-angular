@@ -23,7 +23,6 @@ To refresh the local file, run `postman_getCollection` via MCP and write the res
 - **Component selector prefix**: `app` (elements use `kebab-case`, attributes use `camelCase`)
 - **Component default style**: SCSS (set in `angular.json` schematics)
 - **All new components** must use SCSS style via `ng generate component ... --style=scss` or the schematic default
-- **HTML templates** are inline in `.ts` files by default (not separate `.html` files)
 - **Tailwind CSS** is configured with `@tailwindcss/forms` plugin — use utility classes in component SCSS
 
 ## Architecture
@@ -55,3 +54,10 @@ To refresh the local file, run `postman_getCollection` via MCP and write the res
 - Tailwind CSS: `~3.1.6`
 - ESLint: `^8.33.0` with `@angular-eslint` v15.2.1
 - Karma / Jasmine for testing
+
+## Advices
+
+- If there's a modify that require the change doom and styles, be willing to use angular material and cdk components `https://v15.material.angular.dev/`.
+- If there's a modify that require the change doom and styles, read the skills of tailwind.
+- If there's a urge to see external documentation use context7 MCP.
+- If it may find a component that is repeating its calling across serious components or modules, put it in our shared module `@src\app\modules\shared/`

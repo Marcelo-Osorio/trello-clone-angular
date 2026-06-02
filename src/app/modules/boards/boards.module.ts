@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { CdkAccordionModule } from '@angular/cdk/accordion';
 import { DialogModule } from '@angular/cdk/dialog';
@@ -17,6 +17,17 @@ import { BoardCardComponent } from './components/board-card/board-card.component
 import { CreateBoardDialogComponent } from './components/create-board-dialog/create-board-dialog.component';
 import { UpdateBoardDialogComponent } from './components/update-board-dialog/update-board-dialog.component';
 import { SkeletonLoaderComponent } from './components/skeleton-loader/skeleton-loader.component';
+import { BoardNavbarComponent } from './components/board-navbar/board-navbar.component';
+import { ListComponent } from './components/list/list.component';
+import { CardPreviewComponent } from './components/card-preview/card-preview.component';
+import { CardModalComponent } from './components/card-modal/card-modal.component';
+import { LabelsModalComponent } from './components/labels-modal/labels-modal.component';
+import { DueDateModalComponent } from './components/due-date-modal/due-date-modal.component';
+import { ChecklistGroupComponent } from './components/checklist-group/checklist-group.component';
+import { MemberPickerComponent } from './components/member-picker/member-picker.component';
+import { SearchPanelComponent } from './components/search-panel/search-panel.component';
+import { ArchivedModalComponent } from './components/archived-modal/archived-modal.component';
+import { InviteDialogComponent } from './components/invite-dialog/invite-dialog.component';
 
 @NgModule({
   declarations: [
@@ -27,9 +38,21 @@ import { SkeletonLoaderComponent } from './components/skeleton-loader/skeleton-l
     CreateBoardDialogComponent,
     UpdateBoardDialogComponent,
     SkeletonLoaderComponent,
+    BoardNavbarComponent,
+    ListComponent,
+    CardPreviewComponent,
+    CardModalComponent,
+    LabelsModalComponent,
+    DueDateModalComponent,
+    ChecklistGroupComponent,
+    MemberPickerComponent,
+    SearchPanelComponent,
+    ArchivedModalComponent,
+    InviteDialogComponent,
   ],
   imports: [
     CommonModule,
+    FormsModule,
     BoardsRoutingModule,
     SharedModule,
     DragDropModule,

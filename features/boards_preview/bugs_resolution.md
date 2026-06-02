@@ -38,7 +38,7 @@ we don't have a cache system to track the results from api
 ### solution
 read mcp server POSTMAN > my_workspace > fake-trello api
 We need a cache system to get board by id, and me boards , So when we make whatever request with those endpoints first we verify if we already have the result in our cache if it's true just load that, if not call api
-Will be save in a session storage
+Will be save in a sevssion storage
 get board by id -> save it by its id, but the hash of the session storage has to be 'detail_boards' and has to be an object {id:board, id2: board} so will be load more boards as long as we get in more boards and get its details
 me boards -> save it everything 
 Also don't forget that the cache will be reset to void when we use post or put endpoint depend of the endpoint but both excluding users and auth endpoints

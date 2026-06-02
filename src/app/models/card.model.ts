@@ -1,4 +1,34 @@
 import type { User } from './user.model';
+import type { List } from './list.model';
+
+export type LabelColor = 'green' | 'yellow' | 'orange' | 'red' | 'purple' | 'blue';
+
+export interface Label {
+  labelName: string;
+  color: LabelColor;
+}
+
+export interface ChecklistItem {
+  item: string;
+  checked: boolean;
+}
+
+export interface ChecklistGroup {
+  groupName: string;
+  items: ChecklistItem[];
+}
+
+export interface CardDescription {
+  textField: string;
+  checklist: ChecklistGroup[];
+  labels: Label[];
+  dueDates: string[];
+}
+
+export interface ArchivedData {
+  lists: List[];
+  cards: Card[];
+}
 
 export interface CardBoardRef {
   id: number;

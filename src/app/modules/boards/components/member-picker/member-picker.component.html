@@ -1,0 +1,24 @@
+<div class="w-72">
+  <h3 class="text-sm font-semibold text-gray-700 px-3 py-2 border-b border-gray-200">Members</h3>
+  <div class="max-h-64 overflow-y-auto py-1">
+    <button
+      *ngFor="let member of members"
+      (click)="toggleMember(member)"
+      class="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 transition-colors text-left"
+      type="button"
+    >
+      <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+        {{ getInitials(member.name) }}
+      </div>
+      <span class="text-sm text-gray-700 flex-1 truncate">{{ member.name }}</span>
+      <fa-icon
+        *ngIf="isSelected(member)"
+        [icon]="faCheck"
+        class="text-blue-600 text-sm"
+      ></fa-icon>
+    </button>
+    <div *ngIf="members.length === 0" class="px-3 py-4 text-sm text-gray-400 text-center">
+      No members available
+    </div>
+  </div>
+</div>
