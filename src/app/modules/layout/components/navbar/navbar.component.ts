@@ -64,22 +64,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
       .subscribe(stack => {
         this.recentBoards = stack.slice(0, 4);
       });
-
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd),
-      takeUntil(this.destroy$)
-    ).subscribe((event: any) => {
-      const url = event.urlAfterRedirects || event.url;
-      const match = url.match(/\/app\/boards\/(\d+)/);
-      if (match) {
-        const boardId = parseInt(match[1], 10);
-        this.boardsService.getBoardById(boardId)
-          .pipe(takeUntil(this.destroy$))
-          .subscribe((board) => {
-            this.recentBoardsService.pushBoard(board);
-          });
-      }
-    });
   }
 
   ngOnDestroy(): void {

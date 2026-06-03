@@ -6,6 +6,8 @@ import { Subscription } from 'rxjs';
 
 import { BoardsService } from '@services/boards.service';
 import { CardsService } from '@services/cards.service';
+import { ListsService } from '@services/lists.service';
+import { BoardsCacheService } from '@services/boards-cache.service';
 import { ArchivedService } from '@services/archived.service';
 import { SearchService } from '@services/search.service';
 import { Board } from '@models/board.model';
@@ -13,6 +15,7 @@ import { Card } from '@models/card.model';
 import { List } from '@models/list.model';
 import { CardModalComponent } from '../../components/card-modal/card-modal.component';
 import { ArchivedModalComponent } from '../../components/archived-modal/archived-modal.component';
+import { RecentBoardsService } from '@services/recent-boards.service';
 
 @Component({
   selector: 'app-board',
@@ -32,6 +35,8 @@ export class BoardComponent implements OnInit, OnDestroy {
   loading = true;
   error: string | null = null;
   searchOpen = false;
+  showAddListForm = false;
+  newListTitle = '';
 
   private paramsSub: Subscription | null = null;
 
@@ -40,9 +45,12 @@ export class BoardComponent implements OnInit, OnDestroy {
     private router: Router,
     private boardsService: BoardsService,
     private cardsService: CardsService,
+    private listsService: ListsService,
+    private boardsCacheService: BoardsCacheService,
     private archivedService: ArchivedService,
     private searchService: SearchService,
     private dialog: Dialog,
+    private recentBoardsService: RecentBoardsService
   ) {}
 
   ngOnInit(): void {
@@ -204,6 +212,42 @@ export class BoardComponent implements OnInit, OnDestroy {
     list.cards = [];
   }
 
+  toggleAddListForm(): void {
+    this.showAddListForm = !this.showAddListForm;
+    if (!this.showAddListForm) {
+      this.newListTitle = '';
+    }
+  }
+
+  cancelAddList(): void {
+    this.showAddListForm = false;
+    this.newListTitle = '';
+  }
+
+  addList(): void {
+    const title = this.newListTitle.trim();
+    if (!title || !this.board) {
+      return;
+    }
+    const position = this.lists.length;
+    this.listsService.createList({ title, boardId: this.board.id, position }).subscribe({
+      next: (newList) => {
+        this.boardsCacheService.removeBoardDetail(this.board!.id);
+        this.lists.push(newList);
+        this.newListTitle = '';
+        this.showAddListForm = false;
+      },
+    });
+  }
+
+  onAddListKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      this.addList();
+    } else if (event.key === 'Escape') {
+      this.cancelAddList();
+    }
+  }
+
   onCardClick(cardId: number): void {
     if (!this.board) return;
 
@@ -252,9 +296,9 @@ export class BoardComponent implements OnInit, OnDestroy {
   private loadBoard(id: number): void {
     this.loading = true;
     this.error = null;
-
     this.boardsService.getBoardById(id).subscribe({
       next: (board) => {
+        this.recentBoardsService.pushBoard(board);
         this.board = board;
         this.lists = this.filterArchived(board);
         this.loading = false;

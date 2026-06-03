@@ -13,6 +13,8 @@ import { ListComponent } from '@boards/components/list/list.component';
 import { CardPreviewComponent } from '@boards/components/card-preview/card-preview.component';
 import { BoardsService } from '@services/boards.service';
 import { CardsService } from '@services/cards.service';
+import { ListsService } from '@services/lists.service';
+import { BoardsCacheService } from '@services/boards-cache.service';
 import { ArchivedService } from '@services/archived.service';
 import { Board } from '@models/board.model';
 import { List } from '@models/list.model';
@@ -23,6 +25,8 @@ describe('BoardComponent', () => {
   let fixture: ComponentFixture<BoardComponent>;
   let boardsServiceSpy: jasmine.SpyObj<BoardsService>;
   let cardsServiceSpy: jasmine.SpyObj<CardsService>;
+  let listsServiceSpy: jasmine.SpyObj<ListsService>;
+  let boardsCacheServiceSpy: jasmine.SpyObj<BoardsCacheService>;
   let archivedServiceSpy: jasmine.SpyObj<ArchivedService>;
   let dialogSpy: jasmine.SpyObj<Dialog>;
 
@@ -91,6 +95,8 @@ describe('BoardComponent', () => {
   function setup(routeParamId: string, boardResponse: Board | null = mockBoard, error = false) {
     boardsServiceSpy = jasmine.createSpyObj('BoardsService', ['getBoardById', 'updateBoard']);
     cardsServiceSpy = jasmine.createSpyObj('CardsService', ['createCard', 'updateCard']);
+    listsServiceSpy = jasmine.createSpyObj('ListsService', ['createList']);
+    boardsCacheServiceSpy = jasmine.createSpyObj('BoardsCacheService', ['removeBoardDetail', 'getBoardById', 'setBoardById', 'clearAll']);
     archivedServiceSpy = jasmine.createSpyObj('ArchivedService', ['getArchived', 'cleanStale', 'archiveCard', 'archiveList']);
     archivedServiceSpy.getArchived.and.returnValue({ lists: [], cards: [] });
     dialogSpy = jasmine.createSpyObj('Dialog', ['open']);
@@ -116,6 +122,8 @@ describe('BoardComponent', () => {
         },
         { provide: BoardsService, useValue: boardsServiceSpy },
         { provide: CardsService, useValue: cardsServiceSpy },
+        { provide: ListsService, useValue: listsServiceSpy },
+        { provide: BoardsCacheService, useValue: boardsCacheServiceSpy },
         { provide: ArchivedService, useValue: archivedServiceSpy },
         { provide: Dialog, useValue: dialogSpy },
       ],
@@ -168,6 +176,8 @@ describe('BoardComponent', () => {
       boardsServiceSpy = jasmine.createSpyObj('BoardsService', ['getBoardById', 'updateBoard']);
       boardsServiceSpy.getBoardById.and.returnValue(of(mockBoard));
       cardsServiceSpy = jasmine.createSpyObj('CardsService', ['createCard', 'updateCard']);
+      listsServiceSpy = jasmine.createSpyObj('ListsService', ['createList']);
+      boardsCacheServiceSpy = jasmine.createSpyObj('BoardsCacheService', ['removeBoardDetail', 'getBoardById', 'setBoardById', 'clearAll']);
 
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
@@ -182,6 +192,8 @@ describe('BoardComponent', () => {
           },
           { provide: BoardsService, useValue: boardsServiceSpy },
           { provide: CardsService, useValue: cardsServiceSpy },
+          { provide: ListsService, useValue: listsServiceSpy },
+          { provide: BoardsCacheService, useValue: boardsCacheServiceSpy },
           { provide: ArchivedService, useValue: archivedServiceSpy },
           { provide: Dialog, useValue: jasmine.createSpyObj('Dialog', ['open']) },
         ],
@@ -205,6 +217,8 @@ describe('BoardComponent', () => {
       boardsServiceSpy = jasmine.createSpyObj('BoardsService', ['getBoardById', 'updateBoard']);
       boardsServiceSpy.getBoardById.and.returnValue(of(mockBoard));
       cardsServiceSpy = jasmine.createSpyObj('CardsService', ['createCard', 'updateCard']);
+      listsServiceSpy = jasmine.createSpyObj('ListsService', ['createList']);
+      boardsCacheServiceSpy = jasmine.createSpyObj('BoardsCacheService', ['removeBoardDetail', 'getBoardById', 'setBoardById', 'clearAll']);
 
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
@@ -219,6 +233,8 @@ describe('BoardComponent', () => {
           },
           { provide: BoardsService, useValue: boardsServiceSpy },
           { provide: CardsService, useValue: cardsServiceSpy },
+          { provide: ListsService, useValue: listsServiceSpy },
+          { provide: BoardsCacheService, useValue: boardsCacheServiceSpy },
           { provide: ArchivedService, useValue: archivedServiceSpy },
           { provide: Dialog, useValue: jasmine.createSpyObj('Dialog', ['open']) },
         ],
@@ -247,6 +263,8 @@ describe('BoardComponent', () => {
       boardsServiceSpy.getBoardById.and.returnValue(of(mockBoard));
       boardsServiceSpy.updateBoard.and.returnValue(of({ ...mockBoard, title: 'New Name' }));
       cardsServiceSpy = jasmine.createSpyObj('CardsService', ['createCard', 'updateCard']);
+      listsServiceSpy = jasmine.createSpyObj('ListsService', ['createList']);
+      boardsCacheServiceSpy = jasmine.createSpyObj('BoardsCacheService', ['removeBoardDetail', 'getBoardById', 'setBoardById', 'clearAll']);
 
       archivedServiceSpy = jasmine.createSpyObj('ArchivedService', ['getArchived', 'cleanStale', 'archiveCard', 'archiveList']);
       archivedServiceSpy.getArchived.and.returnValue({ lists: [], cards: [] });
@@ -264,6 +282,8 @@ describe('BoardComponent', () => {
           },
           { provide: BoardsService, useValue: boardsServiceSpy },
           { provide: CardsService, useValue: cardsServiceSpy },
+          { provide: ListsService, useValue: listsServiceSpy },
+          { provide: BoardsCacheService, useValue: boardsCacheServiceSpy },
           { provide: ArchivedService, useValue: archivedServiceSpy },
           { provide: Dialog, useValue: jasmine.createSpyObj('Dialog', ['open']) },
         ],
@@ -369,6 +389,116 @@ describe('BoardComponent', () => {
       const callCount = dialogSpy.open.calls.count();
       component.onCardClick(10);
       expect(dialogSpy.open.calls.count()).toBe(callCount);
+    });
+  });
+
+  describe('add list', () => {
+    it('should call listsService.createList with correct params', () => {
+      setup('1');
+      fixture.detectChanges();
+
+      const newList: List = {
+        id: 99,
+        title: 'New List',
+        position: 2,
+        creationAt: '2026-01-01',
+        updatedAt: '2026-01-01',
+        cards: [],
+      };
+      listsServiceSpy.createList.and.returnValue(of(newList));
+
+      component.newListTitle = 'New List';
+      component.addList();
+
+      expect(listsServiceSpy.createList).toHaveBeenCalledWith({
+        title: 'New List',
+        boardId: 1,
+        position: 2,
+      });
+    });
+
+    it('should invalidate board cache after adding a list', () => {
+      setup('1');
+      fixture.detectChanges();
+
+      const newList: List = {
+        id: 99,
+        title: 'New List',
+        position: 2,
+        creationAt: '2026-01-01',
+        updatedAt: '2026-01-01',
+        cards: [],
+      };
+      listsServiceSpy.createList.and.returnValue(of(newList));
+
+      component.newListTitle = 'New List';
+      component.addList();
+
+      expect(boardsCacheServiceSpy.removeBoardDetail).toHaveBeenCalledWith(1);
+    });
+
+    it('should add new list to local lists array', () => {
+      setup('1');
+      fixture.detectChanges();
+
+      const newList: List = {
+        id: 99,
+        title: 'New List',
+        position: 2,
+        creationAt: '2026-01-01',
+        updatedAt: '2026-01-01',
+        cards: [],
+      };
+      listsServiceSpy.createList.and.returnValue(of(newList));
+
+      component.newListTitle = 'New List';
+      component.addList();
+
+      expect(component.lists.length).toBe(3);
+      expect(component.lists[2].title).toBe('New List');
+    });
+
+    it('should reset form state after adding a list', () => {
+      setup('1');
+      fixture.detectChanges();
+
+      const newList: List = {
+        id: 99,
+        title: 'New List',
+        position: 2,
+        creationAt: '2026-01-01',
+        updatedAt: '2026-01-01',
+        cards: [],
+      };
+      listsServiceSpy.createList.and.returnValue(of(newList));
+
+      component.showAddListForm = true;
+      component.newListTitle = 'New List';
+      component.addList();
+
+      expect(component.newListTitle).toBe('');
+      expect(component.showAddListForm).toBe(false);
+    });
+
+    it('should not call createList when board is null', () => {
+      setup('1');
+      fixture.detectChanges();
+      component.board = null;
+
+      component.newListTitle = 'New List';
+      component.addList();
+
+      expect(listsServiceSpy.createList).not.toHaveBeenCalled();
+    });
+
+    it('should not call createList when title is empty', () => {
+      setup('1');
+      fixture.detectChanges();
+
+      component.newListTitle = '   ';
+      component.addList();
+
+      expect(listsServiceSpy.createList).not.toHaveBeenCalled();
     });
   });
 });
