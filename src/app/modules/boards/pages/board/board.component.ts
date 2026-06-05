@@ -1,8 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import {
+  CdkDragDrop,
+  moveItemInArray,
+  transferArrayItem,
+} from '@angular/cdk/drag-drop';
 import { Dialog } from '@angular/cdk/dialog';
-import { Subscription } from 'rxjs';
+import { Subscription, tap } from 'rxjs';
 
 import { BoardsService } from '@services/boards.service';
 import { CardsService } from '@services/cards.service';
@@ -10,9 +14,11 @@ import { ListsService } from '@services/lists.service';
 import { BoardsCacheService } from '@services/boards-cache.service';
 import { ArchivedService } from '@services/archived.service';
 import { SearchService } from '@services/search.service';
+import { AuthService } from '@services/auth.service';
 import { Board } from '@models/board.model';
 import { Card } from '@models/card.model';
 import { List } from '@models/list.model';
+import { User } from '@models/user.model';
 import { CardModalComponent } from '../../components/card-modal/card-modal.component';
 import { ArchivedModalComponent } from '../../components/archived-modal/archived-modal.component';
 import { RecentBoardsService } from '@services/recent-boards.service';
@@ -37,8 +43,10 @@ export class BoardComponent implements OnInit, OnDestroy {
   searchOpen = false;
   showAddListForm = false;
   newListTitle = '';
+  currentUser: User | null = null;
 
   private paramsSub: Subscription | null = null;
+  private authSub: Subscription | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -49,6 +57,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     private boardsCacheService: BoardsCacheService,
     private archivedService: ArchivedService,
     private searchService: SearchService,
+    private authService: AuthService,
     private dialog: Dialog,
     private recentBoardsService: RecentBoardsService
   ) {}
@@ -60,21 +69,27 @@ export class BoardComponent implements OnInit, OnDestroy {
         this.loadBoard(id);
       }
     });
+    this.authSub = this.authService.user$.subscribe((user) => {
+      this.currentUser = user;
+    });
   }
 
   ngOnDestroy(): void {
     this.paramsSub?.unsubscribe();
+    this.authSub?.unsubscribe();
   }
 
   onBoardNameChange(newName: string): void {
     if (!this.board || !newName.trim()) {
       return;
     }
-    this.boardsService.updateBoard(this.board.id, { title: newName.trim() }).subscribe({
-      next: (updated) => {
-        this.board = updated;
-      },
-    });
+    this.boardsService
+      .updateBoard(this.board.id, { title: newName.trim() })
+      .subscribe({
+        next: (updated) => {
+          this.board = updated;
+        },
+      });
   }
 
   onSearchToggle(): void {
@@ -123,16 +138,26 @@ export class BoardComponent implements OnInit, OnDestroy {
   onCardDrop(event: CdkDragDrop<Card[]>, targetList: List): void {
     if (event.previousContainer === event.container) {
       // Reorder within same list
-      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+      moveItemInArray(
+        event.container.data,
+        event.previousIndex,
+        event.currentIndex,
+      );
       const movedCard = event.container.data[event.currentIndex];
       if (movedCard && this.board) {
-        this.cardsService.updateCard(movedCard.id, {
-          title: movedCard.title,
-          description: movedCard.description,
-          position: event.currentIndex,
-          listId: targetList.id,
-          boardId: this.board.id,
-        }).subscribe();
+        this.cardsService
+          .updateCard(movedCard.id, {
+            title: movedCard.title,
+            description: movedCard.description,
+            position: event.currentIndex,
+            listId: targetList.id,
+            boardId: this.board.id,
+          })
+          .subscribe({
+            next: () => {
+              this.boardsCacheService.removeBoardDetail(this.board!.id);
+            },
+          });
       }
     } else {
       // Transfer between lists
@@ -144,13 +169,19 @@ export class BoardComponent implements OnInit, OnDestroy {
         event.currentIndex,
       );
       if (card && this.board) {
-        this.cardsService.updateCard(card.id, {
-          title: card.title,
-          description: card.description,
-          position: event.currentIndex,
-          listId: targetList.id,
-          boardId: this.board.id,
-        }).subscribe();
+        this.cardsService
+          .updateCard(card.id, {
+            title: card.title,
+            description: card.description,
+            position: event.currentIndex,
+            listId: targetList.id,
+            boardId: this.board.id,
+          })
+          .subscribe({
+            next: () => {
+              this.boardsCacheService.removeBoardDetail(this.board!.id);
+            },
+          });
       }
     }
   }
@@ -170,20 +201,23 @@ export class BoardComponent implements OnInit, OnDestroy {
       return;
     }
     const nextPosition = (targetList.cards || []).length;
-    this.cardsService.createCard({
-      title: event.title,
-      listId: event.listId,
-      boardId: this.board.id,
-      position: nextPosition,
-      description: '',
-    }).subscribe({
-      next: (newCard) => {
-        if (!targetList.cards) {
-          targetList.cards = [];
-        }
-        targetList.cards.push(newCard);
-      },
-    });
+    this.cardsService
+      .createCard({
+        title: event.title,
+        listId: event.listId,
+        boardId: this.board.id,
+        position: nextPosition,
+        description: '',
+      })
+      .subscribe({
+        next: (newCard) => {
+          this.boardsCacheService.removeBoardDetail(this.board!.id);
+          if (!targetList.cards) {
+            targetList.cards = [];
+          }
+          targetList.cards.push(newCard);
+        },
+      });
   }
 
   onArchiveList(listId: number): void {
@@ -230,14 +264,16 @@ export class BoardComponent implements OnInit, OnDestroy {
       return;
     }
     const position = this.lists.length;
-    this.listsService.createList({ title, boardId: this.board.id, position }).subscribe({
-      next: (newList) => {
-        this.boardsCacheService.removeBoardDetail(this.board!.id);
-        this.lists.push(newList);
-        this.newListTitle = '';
-        this.showAddListForm = false;
-      },
-    });
+    this.listsService
+      .createList({ title, boardId: this.board.id, position })
+      .subscribe({
+        next: (newList) => {
+          this.boardsCacheService.removeBoardDetail(this.board!.id);
+          this.lists.push(newList);
+          this.newListTitle = '';
+          this.showAddListForm = false;
+        },
+      });
   }
 
   onAddListKeydown(event: KeyboardEvent): void {
@@ -271,6 +307,7 @@ export class BoardComponent implements OnInit, OnDestroy {
           card,
           board: this.board,
           listTitle,
+          currentUser: this.currentUser,
         },
         width: '800px',
         maxHeight: '90vh',
@@ -325,7 +362,9 @@ export class BoardComponent implements OnInit, OnDestroy {
       .filter((list) => !archivedListIds.has(list.id))
       .map((list) => ({
         ...list,
-        cards: (list.cards || []).filter((card) => !archivedCardIds.has(card.id)),
+        cards: (list.cards || []).filter(
+          (card) => !archivedCardIds.has(card.id),
+        ),
       }));
   }
 }

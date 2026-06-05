@@ -14,6 +14,7 @@ import { Card, CardDescription, ChecklistGroup, Label } from '@models/card.model
 import { Board } from '@models/board.model';
 import { User } from '@models/user.model';
 import { CardsService } from '@services/cards.service';
+import { UsersService } from '@services/users.service';
 import { parseDescription } from '@utils/parse-description';
 
 import { LabelsModalComponent } from '../labels-modal/labels-modal.component';
@@ -23,6 +24,7 @@ interface CardModalInput {
   card: Card;
   board: Board;
   listTitle: string;
+  currentUser: User | null;
 }
 
 @Component({
@@ -43,6 +45,7 @@ export class CardModalComponent {
   board: Board;
   listTitle: string;
   description: CardDescription;
+  availableMembers: User[] = [];
 
   editingTitle = false;
   titleDraft = '';
@@ -56,12 +59,31 @@ export class CardModalComponent {
     private dialogRef: DialogRef<Card>,
     private dialog: Dialog,
     private cardsService: CardsService,
+    private usersService: UsersService,
     @Inject(DIALOG_DATA) data: CardModalInput,
   ) {
     this.card = { ...data.card };
     this.board = data.board;
     this.listTitle = data.listTitle;
     this.description = parseDescription(this.card.description);
+    this.loadAvailableMembers(data.currentUser);
+  }
+
+  private loadAvailableMembers(currentUser: User | null): void {
+    const stored = this.usersService.getBoardMembers(this.board.id);
+    const seen = new Set<number>();
+    const result: User[] = [];
+    if (currentUser) {
+      result.push(currentUser);
+      seen.add(currentUser.id);
+    }
+    for (const member of stored) {
+      if (!seen.has(member.id)) {
+        result.push(member);
+        seen.add(member.id);
+      }
+    }
+    this.availableMembers = result;
   }
 
   // --- Title editing ---
@@ -211,24 +233,19 @@ export class CardModalComponent {
   }
 
   onMemberSelect(member: User): void {
-    const currentMembers = this.card.members || [];
-    const exists = currentMembers.some((m) => m.id === member.id);
-    if (exists) {
-      this.card = {
-        ...this.card,
-        members: currentMembers.filter((m) => m.id !== member.id),
-      };
-    } else {
-      this.card = {
-        ...this.card,
-        members: [...currentMembers, member],
-      };
-    }
+    const mention = `@${member.name}`.split(' ').join('_');
+    const current = this.description.textField;
+    const separator = current.length > 0 && !current.endsWith(' ') ? ' ' : '';
+    this.description = {
+      ...this.description,
+      textField: `${current}${separator}${mention}`,
+    };
+    this.card = {
+      ...this.card,
+      description: JSON.stringify(this.description),
+    };
     this.persistCard();
-  }
-
-  get selectedMemberIds(): number[] {
-    return (this.card.members || []).map((m) => m.id);
+    this.showMemberPicker = false;
   }
 
   // --- Close ---
@@ -259,6 +276,26 @@ export class CardModalComponent {
       blue: 'bg-blue-500',
     };
     return this.description.labels.map((l) => map[l.color] || 'bg-gray-400');
+  }
+
+  get descriptionSegments(): { text: string; isMention: boolean }[] {
+    const text = this.description.textField;
+    if (!text) return [];
+    const parts: { text: string; isMention: boolean }[] = [];
+    const regex = /@\S+/g;
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push({ text: text.slice(lastIndex, match.index), isMention: false });
+      }
+      parts.push({ text: match[0], isMention: true });
+      lastIndex = regex.lastIndex;
+    }
+    if (lastIndex < text.length) {
+      parts.push({ text: text.slice(lastIndex), isMention: false });
+    }
+    return parts;
   }
 
   private persistCard(): void {

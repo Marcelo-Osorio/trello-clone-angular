@@ -42,14 +42,7 @@ export class InviteDialogComponent {
   }
 
   private loadExistingMembers(): void {
-    const stored = localStorage.getItem(`board-members-${this.boardId}`);
-    if (stored) {
-      try {
-        this.selectedMembers = JSON.parse(stored);
-      } catch {
-        this.selectedMembers = [];
-      }
-    }
+    this.selectedMembers = this.usersService.getBoardMembers(this.boardId);
   }
 
   onClose(): void {
@@ -71,10 +64,7 @@ export class InviteDialogComponent {
   }
 
   onSave(): void {
-    localStorage.setItem(
-      `board-members-${this.boardId}`,
-      JSON.stringify(this.selectedMembers)
-    );
+    this.usersService.saveBoardMembers(this.boardId, this.selectedMembers);
     this.dialogRef.close();
   }
 }

@@ -23,7 +23,6 @@ describe('MemberPickerComponent', () => {
     fixture = TestBed.createComponent(MemberPickerComponent);
     component = fixture.componentInstance;
     component.members = mockMembers;
-    component.selectedIds = [1];
     fixture.detectChanges();
   });
 
@@ -36,11 +35,6 @@ describe('MemberPickerComponent', () => {
     expect(el.textContent).toContain('Alice Johnson');
     expect(el.textContent).toContain('Bob Smith');
     expect(el.textContent).toContain('Charlie Brown');
-  });
-
-  it('should show check icon for selected members', () => {
-    expect(component.isSelected(mockMembers[0])).toBe(true);
-    expect(component.isSelected(mockMembers[1])).toBe(false);
   });
 
   it('should emit memberSelect when member is clicked', () => {

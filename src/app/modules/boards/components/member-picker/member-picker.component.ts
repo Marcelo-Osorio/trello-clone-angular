@@ -1,5 +1,4 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { faCheck } from '@fortawesome/free-solid-svg-icons';
 
 import { User } from '@models/user.model';
 
@@ -10,14 +9,7 @@ import { User } from '@models/user.model';
 })
 export class MemberPickerComponent {
   @Input() members: User[] = [];
-  @Input() selectedIds: number[] = [];
   @Output() memberSelect = new EventEmitter<User>();
-
-  faCheck = faCheck;
-
-  isSelected(member: User): boolean {
-    return this.selectedIds.includes(member.id);
-  }
 
   toggleMember(member: User): void {
     this.memberSelect.emit(member);

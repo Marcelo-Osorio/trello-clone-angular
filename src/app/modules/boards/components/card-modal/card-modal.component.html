@@ -79,7 +79,9 @@
               *ngIf="description.textField; else emptyDesc"
               class="text-sm text-gray-700 whitespace-pre-wrap break-words"
             >
-              {{ description.textField }}
+              <ng-container *ngFor="let seg of descriptionSegments">
+                <span *ngIf="seg.isMention" class="text-blue-600 font-semibold">{{ seg.text }}</span><span *ngIf="!seg.isMention">{{ seg.text }}</span>
+              </ng-container>
             </p>
             <ng-template #emptyDesc>
               <span class="text-sm text-gray-400">Add a more detailed description...</span>
@@ -215,8 +217,7 @@
       <!-- Inline member picker -->
       <div *ngIf="showMemberPicker" class="mt-3">
         <app-member-picker
-          [members]="board.members"
-          [selectedIds]="selectedMemberIds"
+          [members]="availableMembers"
           (memberSelect)="onMemberSelect($event)"
         ></app-member-picker>
       </div>
