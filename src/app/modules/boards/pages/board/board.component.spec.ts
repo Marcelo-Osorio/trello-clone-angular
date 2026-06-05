@@ -16,6 +16,7 @@ import { CardsService } from '@services/cards.service';
 import { ListsService } from '@services/lists.service';
 import { BoardsCacheService } from '@services/boards-cache.service';
 import { ArchivedService } from '@services/archived.service';
+import { AuthService } from '@services/auth.service';
 import { Board } from '@models/board.model';
 import { List } from '@models/list.model';
 import { Card } from '@models/card.model';
@@ -28,6 +29,7 @@ describe('BoardComponent', () => {
   let listsServiceSpy: jasmine.SpyObj<ListsService>;
   let boardsCacheServiceSpy: jasmine.SpyObj<BoardsCacheService>;
   let archivedServiceSpy: jasmine.SpyObj<ArchivedService>;
+  let authServiceSpy: jasmine.SpyObj<AuthService>;
   let dialogSpy: jasmine.SpyObj<Dialog>;
 
   const mockLists: List[] = [
@@ -99,6 +101,7 @@ describe('BoardComponent', () => {
     boardsCacheServiceSpy = jasmine.createSpyObj('BoardsCacheService', ['removeBoardDetail', 'getBoardById', 'setBoardById', 'clearAll']);
     archivedServiceSpy = jasmine.createSpyObj('ArchivedService', ['getArchived', 'cleanStale', 'archiveCard', 'archiveList']);
     archivedServiceSpy.getArchived.and.returnValue({ lists: [], cards: [] });
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['getProfile'], { user$: of(null) });
     dialogSpy = jasmine.createSpyObj('Dialog', ['open']);
     dialogSpy.open.and.returnValue({
       closed: { subscribe: jasmine.createSpy('subscribe') },
@@ -125,6 +128,7 @@ describe('BoardComponent', () => {
         { provide: ListsService, useValue: listsServiceSpy },
         { provide: BoardsCacheService, useValue: boardsCacheServiceSpy },
         { provide: ArchivedService, useValue: archivedServiceSpy },
+        { provide: AuthService, useValue: authServiceSpy },
         { provide: Dialog, useValue: dialogSpy },
       ],
     }).compileComponents();
@@ -178,6 +182,7 @@ describe('BoardComponent', () => {
       cardsServiceSpy = jasmine.createSpyObj('CardsService', ['createCard', 'updateCard']);
       listsServiceSpy = jasmine.createSpyObj('ListsService', ['createList']);
       boardsCacheServiceSpy = jasmine.createSpyObj('BoardsCacheService', ['removeBoardDetail', 'getBoardById', 'setBoardById', 'clearAll']);
+      authServiceSpy = jasmine.createSpyObj('AuthService', ['getProfile'], { user$: of(null) });
 
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
@@ -195,6 +200,7 @@ describe('BoardComponent', () => {
           { provide: ListsService, useValue: listsServiceSpy },
           { provide: BoardsCacheService, useValue: boardsCacheServiceSpy },
           { provide: ArchivedService, useValue: archivedServiceSpy },
+          { provide: AuthService, useValue: authServiceSpy },
           { provide: Dialog, useValue: jasmine.createSpyObj('Dialog', ['open']) },
         ],
       }).compileComponents();
@@ -219,6 +225,7 @@ describe('BoardComponent', () => {
       cardsServiceSpy = jasmine.createSpyObj('CardsService', ['createCard', 'updateCard']);
       listsServiceSpy = jasmine.createSpyObj('ListsService', ['createList']);
       boardsCacheServiceSpy = jasmine.createSpyObj('BoardsCacheService', ['removeBoardDetail', 'getBoardById', 'setBoardById', 'clearAll']);
+      authServiceSpy = jasmine.createSpyObj('AuthService', ['getProfile'], { user$: of(null) });
 
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
@@ -236,6 +243,7 @@ describe('BoardComponent', () => {
           { provide: ListsService, useValue: listsServiceSpy },
           { provide: BoardsCacheService, useValue: boardsCacheServiceSpy },
           { provide: ArchivedService, useValue: archivedServiceSpy },
+          { provide: AuthService, useValue: authServiceSpy },
           { provide: Dialog, useValue: jasmine.createSpyObj('Dialog', ['open']) },
         ],
       }).compileComponents();
@@ -265,6 +273,7 @@ describe('BoardComponent', () => {
       cardsServiceSpy = jasmine.createSpyObj('CardsService', ['createCard', 'updateCard']);
       listsServiceSpy = jasmine.createSpyObj('ListsService', ['createList']);
       boardsCacheServiceSpy = jasmine.createSpyObj('BoardsCacheService', ['removeBoardDetail', 'getBoardById', 'setBoardById', 'clearAll']);
+      authServiceSpy = jasmine.createSpyObj('AuthService', ['getProfile'], { user$: of(null) });
 
       archivedServiceSpy = jasmine.createSpyObj('ArchivedService', ['getArchived', 'cleanStale', 'archiveCard', 'archiveList']);
       archivedServiceSpy.getArchived.and.returnValue({ lists: [], cards: [] });
@@ -285,6 +294,7 @@ describe('BoardComponent', () => {
           { provide: ListsService, useValue: listsServiceSpy },
           { provide: BoardsCacheService, useValue: boardsCacheServiceSpy },
           { provide: ArchivedService, useValue: archivedServiceSpy },
+          { provide: AuthService, useValue: authServiceSpy },
           { provide: Dialog, useValue: jasmine.createSpyObj('Dialog', ['open']) },
         ],
       }).compileComponents();

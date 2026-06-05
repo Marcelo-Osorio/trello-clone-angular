@@ -19,8 +19,9 @@ describe('InviteDialogComponent', () => {
   ];
 
   beforeEach(async () => {
-    usersServiceSpy = jasmine.createSpyObj('UsersService', ['getUsers']);
+    usersServiceSpy = jasmine.createSpyObj('UsersService', ['getUsers', 'getBoardMembers', 'saveBoardMembers']);
     usersServiceSpy.getUsers.and.returnValue(of(mockUsers));
+    usersServiceSpy.getBoardMembers.and.returnValue([]);
     dialogRefSpy = jasmine.createSpyObj('DialogRef', ['close']);
 
     await TestBed.configureTestingModule({
@@ -64,13 +65,12 @@ describe('InviteDialogComponent', () => {
     expect(component.selectedMembers.length).toBe(0);
   });
 
-  it('should save members to localStorage', () => {
-    spyOn(localStorage, 'setItem');
+  it('should save members via usersService', () => {
     component.addMember(mockUsers[0]);
     component.onSave();
-    expect(localStorage.setItem).toHaveBeenCalledWith(
-      'board-members-1',
-      jasmine.any(String)
+    expect(usersServiceSpy.saveBoardMembers).toHaveBeenCalledWith(
+      1,
+      [mockUsers[0]],
     );
   });
 });

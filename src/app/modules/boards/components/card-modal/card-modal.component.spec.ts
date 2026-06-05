@@ -8,6 +8,7 @@ import { CardModalComponent } from './card-modal.component';
 import { ChecklistGroupComponent } from '../checklist-group/checklist-group.component';
 import { MemberPickerComponent } from '../member-picker/member-picker.component';
 import { CardsService } from '@services/cards.service';
+import { UsersService } from '@services/users.service';
 import { Card } from '@models/card.model';
 import { Board } from '@models/board.model';
 
@@ -17,6 +18,7 @@ describe('CardModalComponent', () => {
   let dialogRefSpy: jasmine.SpyObj<DialogRef>;
   let dialogSpy: jasmine.SpyObj<Dialog>;
   let cardsServiceSpy: jasmine.SpyObj<CardsService>;
+  let usersServiceSpy: jasmine.SpyObj<UsersService>;
 
   const mockCard: Card = {
     id: 1,
@@ -50,6 +52,7 @@ describe('CardModalComponent', () => {
     card: mockCard,
     board: mockBoard,
     listTitle: 'To Do',
+    currentUser: null,
   };
 
   beforeEach(async () => {
@@ -57,6 +60,8 @@ describe('CardModalComponent', () => {
     dialogSpy = jasmine.createSpyObj('Dialog', ['open']);
     cardsServiceSpy = jasmine.createSpyObj('CardsService', ['updateCard']);
     cardsServiceSpy.updateCard.and.returnValue(of(mockCard));
+    usersServiceSpy = jasmine.createSpyObj('UsersService', ['getBoardMembers']);
+    usersServiceSpy.getBoardMembers.and.returnValue([]);
 
     await TestBed.configureTestingModule({
       imports: [FormsModule, FontAwesomeModule],
@@ -65,6 +70,7 @@ describe('CardModalComponent', () => {
         { provide: DialogRef, useValue: dialogRefSpy },
         { provide: Dialog, useValue: dialogSpy },
         { provide: CardsService, useValue: cardsServiceSpy },
+        { provide: UsersService, useValue: usersServiceSpy },
         { provide: DIALOG_DATA, useValue: mockInput },
       ],
     }).compileComponents();
@@ -105,6 +111,7 @@ describe('CardModalComponent', () => {
         { provide: DialogRef, useValue: dialogRefSpy },
         { provide: Dialog, useValue: dialogSpy },
         { provide: CardsService, useValue: cardsServiceSpy },
+        { provide: UsersService, useValue: usersServiceSpy },
         { provide: DIALOG_DATA, useValue: plainInput },
       ],
     }).compileComponents();
@@ -170,13 +177,11 @@ describe('CardModalComponent', () => {
     expect(component.description.checklist.length).toBe(0);
   });
 
-  it('should toggle member selection', () => {
+  it('should append @mention to description textField when member is selected', () => {
     const member = mockBoard.members[0];
     component.onMemberSelect(member);
-    expect(component.card.members!.length).toBe(1);
-
-    component.onMemberSelect(member);
-    expect(component.card.members!.length).toBe(0);
+    expect(component.description.textField).toContain('@Alice');
+    expect(cardsServiceSpy.updateCard).toHaveBeenCalled();
   });
 
   it('should format due date', () => {
