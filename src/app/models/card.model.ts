@@ -22,7 +22,7 @@ export interface CardDescription {
   textField: string;
   checklist: ChecklistGroup[];
   labels: Label[];
-  dueDates: string[];
+  dueDate: string;
 }
 
 export interface ArchivedData {

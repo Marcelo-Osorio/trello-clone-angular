@@ -27,7 +27,7 @@ describe('CardModalComponent', () => {
       textField: 'Some description',
       checklist: [],
       labels: [{ color: 'green', labelName: 'Feature' }],
-      dueDates: [],
+      dueDate: '',
     }),
     position: 0,
     creationAt: '2026-01-01',
@@ -187,7 +187,7 @@ describe('CardModalComponent', () => {
   it('should format due date', () => {
     component.description = {
       ...component.description,
-      dueDates: ['2026-06-15T14:30:00.000Z'],
+      dueDate: '2026-06-15T14:30:00.000Z',
     };
     expect(component.formattedDueDate).toBeTruthy();
   });
