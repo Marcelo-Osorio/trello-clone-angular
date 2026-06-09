@@ -157,8 +157,7 @@ export class CardModalComponent {
 
   // --- Due dates ---
   openDueDateModal(): void {
-    const currentDate =
-      this.description.dueDates.length > 0 ? this.description.dueDates[0] : undefined;
+    const currentDate = this.description.dueDate || undefined;
 
     this.dialog
       .open<DueDateModalOutput>(DueDateModalComponent, {
@@ -167,9 +166,9 @@ export class CardModalComponent {
       .closed.subscribe((result) => {
         if (result !== undefined) {
           if (result.date === null) {
-            this.description = { ...this.description, dueDates: [] };
+            this.description = { ...this.description, dueDate: '' };
           } else {
-            this.description = { ...this.description, dueDates: [result.date] };
+            this.description = { ...this.description, dueDate: result.date };
           }
           this.card = {
             ...this.card,
@@ -255,8 +254,8 @@ export class CardModalComponent {
 
   // --- Helpers ---
   get formattedDueDate(): string {
-    if (this.description.dueDates.length === 0) return '';
-    const d = new Date(this.description.dueDates[0]);
+    if (!this.description.dueDate) return '';
+    const d = new Date(this.description.dueDate);
     return d.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',

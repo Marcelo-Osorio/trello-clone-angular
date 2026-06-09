@@ -56,12 +56,12 @@ describe('Card Model Types', () => {
           },
         ],
         labels: [{ labelName: 'Urgent', color: 'red' }],
-        dueDates: ['2026-06-01T00:00:00.000Z'],
+        dueDate: '2026-06-01T00:00:00.000Z',
       };
       expect(desc.textField).toBe('This is the card description');
       expect(desc.checklist.length).toBe(1);
       expect(desc.labels.length).toBe(1);
-      expect(desc.dueDates.length).toBe(1);
+      expect(desc.dueDate).toBe('2026-06-01T00:00:00.000Z');
     });
 
     it('should allow empty card description', () => {
@@ -69,12 +69,12 @@ describe('Card Model Types', () => {
         textField: '',
         checklist: [],
         labels: [],
-        dueDates: [],
+        dueDate: '',
       };
       expect(desc.textField).toBe('');
       expect(desc.checklist.length).toBe(0);
       expect(desc.labels.length).toBe(0);
-      expect(desc.dueDates.length).toBe(0);
+      expect(desc.dueDate).toBe('');
     });
   });
 });

@@ -23,7 +23,7 @@ describe('SearchPanelComponent', () => {
       {
         id: 1,
         title: 'Card 1',
-        description: JSON.stringify({ dueDates: ['2026-06-15', '2026-07-01'] }),
+        description: JSON.stringify({ dueDate: '2026-06-15' }),
         position: 0,
         creationAt: '2026-01-01',
         updatedAt: '2026-01-01',
@@ -31,8 +31,16 @@ describe('SearchPanelComponent', () => {
       {
         id: 2,
         title: 'Card 2',
-        description: JSON.stringify({ dueDates: ['2026-06-15', '2026-08-01'] }),
+        description: JSON.stringify({ dueDate: '2026-07-01' }),
         position: 1,
+        creationAt: '2026-01-01',
+        updatedAt: '2026-01-01',
+      },
+      {
+        id: 3,
+        title: 'Card 3',
+        description: JSON.stringify({ dueDate: '2026-08-01' }),
+        position: 2,
         creationAt: '2026-01-01',
         updatedAt: '2026-01-01',
       },
@@ -100,7 +108,7 @@ describe('SearchPanelComponent', () => {
       manyCards.push({
         id: i,
         title: `Card ${i}`,
-        description: JSON.stringify({ dueDates: [`2026-06-${String(i).padStart(2, '0')}`] }),
+        description: JSON.stringify({ dueDate: `2026-06-${String(i).padStart(2, '0')}` }),
         position: i,
         creationAt: '2026-01-01',
         updatedAt: '2026-01-01',
@@ -118,7 +126,7 @@ describe('SearchPanelComponent', () => {
       manyCards.push({
         id: i,
         title: `Card ${i}`,
-        description: JSON.stringify({ dueDates: [`2026-06-${String(i).padStart(2, '0')}`] }),
+        description: JSON.stringify({ dueDate: `2026-06-${String(i).padStart(2, '0')}` }),
         position: i,
         creationAt: '2026-01-01',
         updatedAt: '2026-01-01',

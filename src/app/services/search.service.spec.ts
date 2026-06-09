@@ -20,7 +20,7 @@ function cardWithDesc(desc: Partial<CardDescription>, overrides: Partial<Card> =
       textField: '',
       checklist: [],
       labels: [],
-      dueDates: [],
+      dueDate: '',
       ...desc,
     }),
     ...overrides,
@@ -149,8 +149,8 @@ describe('SearchService', () => {
     it('should match cards by exact due date', () => {
       service.setFilter('dueDate', '2026-06-15');
       const cards = [
-        cardWithDesc({ dueDates: ['2026-06-15'] }, { id: 1 }),
-        cardWithDesc({ dueDates: ['2026-07-01'] }, { id: 2 }),
+        cardWithDesc({ dueDate: '2026-06-15' }, { id: 1 }),
+        cardWithDesc({ dueDate: '2026-07-01' }, { id: 2 }),
         makeCard({ id: 3 }),
       ];
       const result = service.filterCards(cards);
@@ -179,8 +179,9 @@ describe('SearchService', () => {
   describe('getAllDueDates', () => {
     it('should return all unique due dates sorted', () => {
       const cards = [
-        cardWithDesc({ dueDates: ['2026-06-15', '2026-07-01'] }),
-        cardWithDesc({ dueDates: ['2026-06-15', '2026-08-01'] }),
+        cardWithDesc({ dueDate: '2026-06-15' }),
+        cardWithDesc({ dueDate: '2026-07-01' }),
+        cardWithDesc({ dueDate: '2026-08-01' }),
         makeCard(), // no description
       ];
       const dates = service.getAllDueDates(cards);
