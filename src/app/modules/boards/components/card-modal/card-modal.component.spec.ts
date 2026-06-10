@@ -1,13 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { Dialog, DialogRef, DIALOG_DATA } from '@angular/cdk/dialog';
-import { of } from 'rxjs';
 
 import { CardModalComponent } from './card-modal.component';
 import { ChecklistGroupComponent } from '../checklist-group/checklist-group.component';
 import { MemberPickerComponent } from '../member-picker/member-picker.component';
-import { CardsService } from '@services/cards.service';
 import { UsersService } from '@services/users.service';
 import { Card } from '@models/card.model';
 import { Board } from '@models/board.model';
@@ -17,8 +15,8 @@ describe('CardModalComponent', () => {
   let fixture: ComponentFixture<CardModalComponent>;
   let dialogRefSpy: jasmine.SpyObj<DialogRef>;
   let dialogSpy: jasmine.SpyObj<Dialog>;
-  let cardsServiceSpy: jasmine.SpyObj<CardsService>;
   let usersServiceSpy: jasmine.SpyObj<UsersService>;
+  let cardForm: FormGroup;
 
   const mockCard: Card = {
     id: 1,
@@ -48,45 +46,74 @@ describe('CardModalComponent', () => {
     ],
   };
 
-  const mockInput = {
-    card: mockCard,
-    board: mockBoard,
-    listTitle: 'To Do',
-    currentUser: null,
-  };
+  function buildCardForm(): FormGroup {
+    const fb = new FormBuilder();
+    return fb.group({
+      cardTitle: ['Test Card', [Validators.required, Validators.maxLength(25)]],
+      textDescription: ['Some description', [Validators.maxLength(200)]],
+      labels: fb.array([]),
+      checklist: fb.array([]),
+      dueDate: [''],
+    });
+  }
 
-  beforeEach(async () => {
-    dialogRefSpy = jasmine.createSpyObj('DialogRef', ['close']);
-    dialogSpy = jasmine.createSpyObj('Dialog', ['open']);
-    cardsServiceSpy = jasmine.createSpyObj('CardsService', ['updateCard']);
-    cardsServiceSpy.updateCard.and.returnValue(of(mockCard));
-    usersServiceSpy = jasmine.createSpyObj('UsersService', ['getBoardMembers']);
-    usersServiceSpy.getBoardMembers.and.returnValue([]);
+  function createComponent(cardOverride?: Card): ComponentFixture<CardModalComponent> {
+    const card = cardOverride || mockCard;
+    cardForm = buildCardForm();
+    const mockInput = {
+      cardForm,
+      card,
+      board: mockBoard,
+      listTitle: 'To Do',
+      currentUser: null,
+    };
 
-    await TestBed.configureTestingModule({
-      imports: [FormsModule, FontAwesomeModule],
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [ReactiveFormsModule, FontAwesomeModule],
       declarations: [CardModalComponent, ChecklistGroupComponent, MemberPickerComponent],
       providers: [
         { provide: DialogRef, useValue: dialogRefSpy },
         { provide: Dialog, useValue: dialogSpy },
-        { provide: CardsService, useValue: cardsServiceSpy },
         { provide: UsersService, useValue: usersServiceSpy },
         { provide: DIALOG_DATA, useValue: mockInput },
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(CardModalComponent);
+    return TestBed.createComponent(CardModalComponent);
+  }
+
+  beforeEach(() => {
+    dialogRefSpy = jasmine.createSpyObj('DialogRef', ['close']);
+    dialogSpy = jasmine.createSpyObj('Dialog', ['open']);
+    usersServiceSpy = jasmine.createSpyObj('UsersService', ['getBoardMembers']);
+    usersServiceSpy.getBoardMembers.and.returnValue([]);
+  });
+
+  beforeEach(() => {
+    fixture = createComponent();
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
+
+  // --- Component creation ---
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should display card title', () => {
-    const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).toContain('Test Card');
+  it('should accept FormGroup via DIALOG_DATA', () => {
+    expect(component.cardForm).toBeTruthy();
+    expect(component.cardForm.get('cardTitle')).toBeTruthy();
+    expect(component.cardForm.get('textDescription')).toBeTruthy();
+  });
+
+  // --- Display ---
+
+  it('should display card title in input', () => {
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('input[formControlName="cardTitle"]');
+    expect(input).toBeTruthy();
+    expect(input.value).toBe('Test Card');
   });
 
   it('should display list title in subtitle', () => {
@@ -101,96 +128,64 @@ describe('CardModalComponent', () => {
 
   it('should handle plain text description gracefully', () => {
     const plainCard = { ...mockCard, description: 'plain text' };
-    const plainInput = { ...mockInput, card: plainCard };
-
-    TestBed.resetTestingModule();
-    TestBed.configureTestingModule({
-      imports: [FormsModule, FontAwesomeModule],
-      declarations: [CardModalComponent, ChecklistGroupComponent, MemberPickerComponent],
-      providers: [
-        { provide: DialogRef, useValue: dialogRefSpy },
-        { provide: Dialog, useValue: dialogSpy },
-        { provide: CardsService, useValue: cardsServiceSpy },
-        { provide: UsersService, useValue: usersServiceSpy },
-        { provide: DIALOG_DATA, useValue: plainInput },
-      ],
-    }).compileComponents();
-
-    const plainFixture = TestBed.createComponent(CardModalComponent);
+    const plainFixture = createComponent(plainCard);
     const plainComponent = plainFixture.componentInstance;
     expect(plainComponent.description.textField).toBe('plain text');
     expect(plainComponent.description.labels.length).toBe(0);
   });
 
-  it('should close dialog with card data', () => {
-    component.close();
-    expect(dialogRefSpy.close).toHaveBeenCalledWith(component.card);
+  // --- Form control writes (no API calls) ---
+
+  it('should write title changes to cardTitle form control', () => {
+    component.onTitleChange('New Title');
+    expect(component.cardForm.get('cardTitle')!.value).toBe('New Title');
   });
 
-  it('should toggle title editing', () => {
-    expect(component.editingTitle).toBe(false);
-    component.startEditTitle();
-    expect(component.editingTitle).toBe(true);
-    expect(component.titleDraft).toBe('Test Card');
+  it('should write description changes to textDescription form control', () => {
+    component.onDescriptionChange('Updated description');
+    expect(component.cardForm.get('textDescription')!.value).toBe('Updated description');
   });
 
-  it('should save title and call API', () => {
-    const updatedCard = { ...mockCard, title: 'Updated Title' };
-    cardsServiceSpy.updateCard.and.returnValue(of(updatedCard));
-
-    component.startEditTitle();
-    component.titleDraft = 'Updated Title';
-    component.saveTitle();
-    expect(component.card.title).toBe('Updated Title');
-    expect(cardsServiceSpy.updateCard).toHaveBeenCalled();
-  });
-
-  it('should toggle description editing', () => {
-    expect(component.editingDescription).toBe(false);
-    component.startEditDescription();
-    expect(component.editingDescription).toBe(true);
-  });
-
-  it('should save description and call API', () => {
-    component.startEditDescription();
-    component.descriptionDraft = 'Updated description';
-    component.saveDescription();
-    expect(component.description.textField).toBe('Updated description');
-    expect(cardsServiceSpy.updateCard).toHaveBeenCalled();
-  });
-
-  it('should add a new checklist group', () => {
-    component.startAddChecklist();
-    component.newChecklistName = 'My Checklist';
-    component.submitNewChecklist();
-    expect(component.description.checklist.length).toBe(1);
-    expect(component.description.checklist[0].groupName).toBe('My Checklist');
-    expect(cardsServiceSpy.updateCard).toHaveBeenCalled();
-  });
-
-  it('should delete a checklist group', () => {
-    component.description = {
-      ...component.description,
-      checklist: [{ groupName: 'Test', items: [] }],
-    };
-    component.onChecklistGroupDelete(0);
-    expect(component.description.checklist.length).toBe(0);
-  });
-
-  it('should append @mention to description textField when member is selected', () => {
+  it('should append @mention to textDescription on member select', () => {
     const member = mockBoard.members[0];
     component.onMemberSelect(member);
-    expect(component.description.textField).toContain('@Alice');
-    expect(cardsServiceSpy.updateCard).toHaveBeenCalled();
+    expect(component.cardForm.get('textDescription')!.value).toContain('@Alice');
   });
 
-  it('should format due date', () => {
-    component.description = {
-      ...component.description,
-      dueDate: '2026-06-15T14:30:00.000Z',
-    };
-    expect(component.formattedDueDate).toBeTruthy();
+  // --- No CardsService dependency ---
+
+  it('should NOT have a persistCard method', () => {
+    expect((component as any).persistCard).toBeUndefined();
   });
+
+  it('should NOT have draft variables', () => {
+    expect((component as any).titleDraft).toBeUndefined();
+    expect((component as any).descriptionDraft).toBeUndefined();
+    expect((component as any).editingTitle).toBeUndefined();
+    expect((component as any).editingDescription).toBeUndefined();
+    expect((component as any).newChecklistName).toBeUndefined();
+  });
+
+  it('should NOT have save/cancel edit methods', () => {
+    expect((component as any).saveTitle).toBeUndefined();
+    expect((component as any).cancelEditTitle).toBeUndefined();
+    expect((component as any).saveDescription).toBeUndefined();
+    expect((component as any).cancelEditDescription).toBeUndefined();
+    expect((component as any).submitNewChecklist).toBeUndefined();
+    expect((component as any).startAddChecklist).toBeUndefined();
+    expect((component as any).onChecklistGroupDelete).toBeUndefined();
+  });
+
+  // --- Close ---
+
+  it('should close dialog without passing card data', () => {
+    component.close();
+    expect(dialogRefSpy.close).toHaveBeenCalled();
+    // close() should not pass card data — board page handles it
+    expect(dialogRefSpy.close).toHaveBeenCalledWith();
+  });
+
+  // --- Sub-modals ---
 
   it('should open labels modal', () => {
     const mockClosedSub = { closed: { subscribe: jasmine.createSpy('subscribe') } };
@@ -204,5 +199,23 @@ describe('CardModalComponent', () => {
     dialogSpy.open.and.returnValue(mockClosedSub as any);
     component.openDueDateModal();
     expect(dialogSpy.open).toHaveBeenCalled();
+  });
+
+  // --- Helpers ---
+
+  it('should format due date', () => {
+    component.description = {
+      ...component.description,
+      dueDate: '2026-06-15T14:30:00.000Z',
+    };
+    expect(component.formattedDueDate).toBeTruthy();
+  });
+
+  it('should toggle member picker visibility', () => {
+    expect(component.showMemberPicker).toBe(false);
+    component.toggleMemberPicker();
+    expect(component.showMemberPicker).toBe(true);
+    component.toggleMemberPicker();
+    expect(component.showMemberPicker).toBe(false);
   });
 });
