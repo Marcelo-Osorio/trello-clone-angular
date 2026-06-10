@@ -1,4 +1,5 @@
 import { Component, Inject } from '@angular/core';
+import { AbstractControl, FormGroup } from '@angular/forms';
 import { Dialog, DialogRef, DIALOG_DATA } from '@angular/cdk/dialog';
 import {
   faClose,
@@ -10,10 +11,9 @@ import {
   faCalendarDay,
 } from '@fortawesome/free-solid-svg-icons';
 
-import { Card, CardDescription, ChecklistGroup, Label } from '@models/card.model';
+import { Card, CardDescription, Label } from '@models/card.model';
 import { Board } from '@models/board.model';
 import { User } from '@models/user.model';
-import { CardsService } from '@services/cards.service';
 import { UsersService } from '@services/users.service';
 import { parseDescription } from '@utils/parse-description';
 
@@ -21,6 +21,7 @@ import { LabelsModalComponent } from '../labels-modal/labels-modal.component';
 import { DueDateModalComponent } from '../due-date-modal/due-date-modal.component';
 
 interface CardModalInput {
+  cardForm: FormGroup;
   card: Card;
   board: Board;
   listTitle: string;
@@ -41,32 +42,27 @@ export class CardModalComponent {
   faBars = faBars;
   faCalendarDay = faCalendarDay;
 
+  cardForm: FormGroup;
   card: Card;
   board: Board;
   listTitle: string;
   description: CardDescription;
   availableMembers: User[] = [];
-
-  editingTitle = false;
-  titleDraft = '';
-  editingDescription = false;
-  descriptionDraft = '';
-  addingChecklist = false;
-  newChecklistName = '';
   showMemberPicker = false;
 
   constructor(
-    private dialogRef: DialogRef<Card>,
+    private dialogRef: DialogRef,
     private dialog: Dialog,
-    private cardsService: CardsService,
     private usersService: UsersService,
     @Inject(DIALOG_DATA) data: CardModalInput,
   ) {
+    this.cardForm = data.cardForm;
     this.card = { ...data.card };
     this.board = data.board;
     this.listTitle = data.listTitle;
     this.description = parseDescription(this.card.description);
     this.loadAvailableMembers(data.currentUser);
+    this.initFormFromCard();
   }
 
   private loadAvailableMembers(currentUser: User | null): void {
@@ -86,52 +82,41 @@ export class CardModalComponent {
     this.availableMembers = result;
   }
 
-  // --- Title editing ---
-  startEditTitle(): void {
-    this.editingTitle = true;
-    this.titleDraft = this.card.title;
+  private initFormFromCard(): void {
+    const desc = parseDescription(this.card.description);
+    this.cardForm.patchValue({
+      cardTitle: this.card.title,
+      textDescription: desc.textField,
+      dueDate: desc.dueDate,
+    });
   }
 
-  saveTitle(): void {
-    const trimmed = this.titleDraft.trim();
-    if (trimmed && trimmed !== this.card.title) {
-      this.card = { ...this.card, title: trimmed };
-      this.persistCard();
-    }
-    this.editingTitle = false;
+  // --- Form control access helpers ---
+
+  get titleControl(): AbstractControl | null {
+    return this.cardForm.get('cardTitle');
   }
 
-  cancelEditTitle(): void {
-    this.editingTitle = false;
+  get descriptionControl(): AbstractControl | null {
+    return this.cardForm.get('textDescription');
   }
 
-  onTitleKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      this.saveTitle();
-    } else if (event.key === 'Escape') {
-      this.cancelEditTitle();
-    }
+  // --- Form control write methods ---
+
+  onTitleChange(value: string): void {
+    this.cardForm.get('cardTitle')?.setValue(value);
   }
 
-  // --- Description editing ---
-  startEditDescription(): void {
-    this.editingDescription = true;
-    this.descriptionDraft = this.description.textField;
+  onDescriptionChange(value: string): void {
+    this.cardForm.get('textDescription')?.setValue(value);
   }
 
-  saveDescription(): void {
-    this.description = { ...this.description, textField: this.descriptionDraft };
-    this.card = {
-      ...this.card,
-      description: JSON.stringify(this.description),
-    };
-    this.persistCard();
-    this.editingDescription = false;
-  }
-
-  cancelEditDescription(): void {
-    this.editingDescription = false;
+  onMemberSelect(member: User): void {
+    const currentDesc = this.cardForm.get('textDescription')?.value || '';
+    const mention = `@${member.name}`.split(' ').join('_');
+    const separator = currentDesc.length > 0 && !currentDesc.endsWith(' ') ? ' ' : '';
+    this.cardForm.get('textDescription')?.setValue(`${currentDesc}${separator}${mention}`);
+    this.showMemberPicker = false;
   }
 
   // --- Labels ---
@@ -150,7 +135,6 @@ export class CardModalComponent {
             ...this.card,
             description: JSON.stringify(this.description),
           };
-          this.persistCard();
         }
       });
   }
@@ -174,56 +158,8 @@ export class CardModalComponent {
             ...this.card,
             description: JSON.stringify(this.description),
           };
-          this.persistCard();
         }
       });
-  }
-
-  // --- Checklist ---
-  startAddChecklist(): void {
-    this.addingChecklist = true;
-    this.newChecklistName = '';
-  }
-
-  submitNewChecklist(): void {
-    const trimmed = this.newChecklistName.trim();
-    if (!trimmed) return;
-    const newGroup: ChecklistGroup = { groupName: trimmed, items: [] };
-    this.description = {
-      ...this.description,
-      checklist: [...this.description.checklist, newGroup],
-    };
-    this.card = {
-      ...this.card,
-      description: JSON.stringify(this.description),
-    };
-    this.persistCard();
-    this.addingChecklist = false;
-  }
-
-  cancelAddChecklist(): void {
-    this.addingChecklist = false;
-  }
-
-  onChecklistGroupChange(index: number, updatedGroup: ChecklistGroup): void {
-    const checklist = [...this.description.checklist];
-    checklist[index] = updatedGroup;
-    this.description = { ...this.description, checklist };
-    this.card = {
-      ...this.card,
-      description: JSON.stringify(this.description),
-    };
-    this.persistCard();
-  }
-
-  onChecklistGroupDelete(index: number): void {
-    const checklist = this.description.checklist.filter((_, i) => i !== index);
-    this.description = { ...this.description, checklist };
-    this.card = {
-      ...this.card,
-      description: JSON.stringify(this.description),
-    };
-    this.persistCard();
   }
 
   // --- Members ---
@@ -231,25 +167,9 @@ export class CardModalComponent {
     this.showMemberPicker = !this.showMemberPicker;
   }
 
-  onMemberSelect(member: User): void {
-    const mention = `@${member.name}`.split(' ').join('_');
-    const current = this.description.textField;
-    const separator = current.length > 0 && !current.endsWith(' ') ? ' ' : '';
-    this.description = {
-      ...this.description,
-      textField: `${current}${separator}${mention}`,
-    };
-    this.card = {
-      ...this.card,
-      description: JSON.stringify(this.description),
-    };
-    this.persistCard();
-    this.showMemberPicker = false;
-  }
-
   // --- Close ---
   close(): void {
-    this.dialogRef.close(this.card);
+    this.dialogRef.close();
   }
 
   // --- Helpers ---
@@ -295,23 +215,6 @@ export class CardModalComponent {
       parts.push({ text: text.slice(lastIndex), isMention: false });
     }
     return parts;
-  }
-
-  private persistCard(): void {
-    if (!this.card.board || !this.card.list) return;
-    this.cardsService
-      .updateCard(this.card.id, {
-        title: this.card.title,
-        description: this.card.description,
-        position: this.card.position,
-        listId: this.card.list.id,
-        boardId: this.card.board.id,
-      })
-      .subscribe({
-        next: (updated) => {
-          this.card = { ...updated, members: this.card.members };
-        },
-      });
   }
 }
 

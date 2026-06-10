@@ -1,225 +1,148 @@
 <div class="bg-gray-100 rounded-lg shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-  <!-- Header -->
-  <div class="flex items-start justify-between px-6 pt-5 pb-2">
-    <div class="flex items-start gap-3 flex-1 min-w-0">
-      <fa-icon [icon]="faBars" class="text-gray-500 mt-1 shrink-0"></fa-icon>
-      <div class="flex-1 min-w-0">
-        <ng-container *ngIf="!editingTitle; else titleEdit">
-          <h2
-            class="text-xl font-semibold text-gray-800 cursor-pointer hover:bg-gray-200 rounded px-2 py-1 -mx-2 break-words"
-            (click)="startEditTitle()"
-          >
-            {{ card.title }}
-          </h2>
-        </ng-container>
-        <ng-template #titleEdit>
-          <textarea
-            [(ngModel)]="titleDraft"
-            (blur)="saveTitle()"
-            (keydown)="onTitleKeydown($event)"
-            class="w-full text-xl font-semibold px-2 py-1 border border-blue-400 rounded focus:ring-2 focus:ring-blue-400 focus:outline-none resize-none"
-            rows="2"
-            autofocus
-          ></textarea>
-        </ng-template>
-        <p class="text-sm text-gray-500 mt-1">
-          in list <span class="font-medium underline">{{ listTitle }}</span>
-        </p>
-      </div>
-    </div>
-    <button
-      (click)="close()"
-      class="text-gray-400 hover:text-gray-600 transition-colors p-2 shrink-0"
-      type="button"
-      aria-label="Close card modal"
-    >
-      <fa-icon [icon]="faClose" class="text-lg"></fa-icon>
-    </button>
-  </div>
-
-  <div class="flex gap-6 px-6 pb-6">
-    <!-- Main content area -->
-    <div class="flex-1 min-w-0">
-      <!-- Labels section -->
-      <div *ngIf="description.labels.length > 0" class="mb-4">
-        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Labels</h4>
-        <div class="flex gap-1 flex-wrap">
-          <span
-            *ngFor="let label of description.labels; let i = index"
-            class="inline-flex items-center h-6 px-2 rounded text-xs font-medium text-white"
-            [ngClass]="labelColorClasses[i]"
-          >
-            {{ label.labelName || label.color }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Due date section -->
-      <div *ngIf="description.dueDate" class="mb-4">
-        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Due Date</h4>
-        <div class="flex items-center gap-2">
-          <fa-icon [icon]="faCalendarDay" class="text-gray-400 text-sm"></fa-icon>
-          <span class="text-sm text-gray-700">{{ formattedDueDate }}</span>
-        </div>
-      </div>
-
-      <!-- Description section -->
-      <div class="mb-4">
-        <div class="flex items-center gap-2 mb-2">
-          <fa-icon [icon]="faBars" class="text-gray-500"></fa-icon>
-          <h4 class="text-sm font-semibold text-gray-700">Description</h4>
-        </div>
-
-        <ng-container *ngIf="!editingDescription; else descEdit">
+  <div [formGroup]="cardForm">
+    <!-- Header -->
+    <div class="flex items-start justify-between px-6 pt-5 pb-2">
+      <div class="flex items-start gap-3 flex-1 min-w-0">
+        <fa-icon [icon]="faBars" class="text-gray-500 mt-1 shrink-0"></fa-icon>
+        <div class="flex-1 min-w-0">
+          <input
+            formControlName="cardTitle"
+            (input)="onTitleChange($any($event.target).value)"
+            class="w-full text-xl font-semibold text-gray-800 px-2 py-1 border border-transparent rounded hover:border-gray-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            type="text"
+          />
           <div
-            class="min-h-[80px] bg-gray-200 hover:bg-gray-300 rounded px-3 py-2 cursor-pointer transition-colors"
-            (click)="startEditDescription()"
+            *ngIf="cardForm.get('cardTitle')?.invalid && cardForm.get('cardTitle')?.touched"
+            class="text-red-500 text-xs mt-1"
           >
-            <p
-              *ngIf="description.textField; else emptyDesc"
-              class="text-sm text-gray-700 whitespace-pre-wrap break-words"
+            <span *ngIf="cardForm.get('cardTitle')?.errors?.['required']">El t&iacute;tulo es obligatorio</span>
+            <span *ngIf="cardForm.get('cardTitle')?.errors?.['maxlength']">M&aacute;ximo 25 caracteres</span>
+          </div>
+          <p class="text-sm text-gray-500 mt-1">
+            in list <span class="font-medium underline">{{ listTitle }}</span>
+          </p>
+        </div>
+      </div>
+      <button
+        (click)="close()"
+        class="text-gray-400 hover:text-gray-600 transition-colors p-2 shrink-0"
+        type="button"
+        aria-label="Close card modal"
+      >
+        <fa-icon [icon]="faClose" class="text-lg"></fa-icon>
+      </button>
+    </div>
+
+    <div class="flex gap-6 px-6 pb-6">
+      <!-- Main content area -->
+      <div class="flex-1 min-w-0">
+        <!-- Labels section -->
+        <div *ngIf="description.labels.length > 0" class="mb-4">
+          <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Labels</h4>
+          <div class="flex gap-1 flex-wrap">
+            <span
+              *ngFor="let label of description.labels; let i = index"
+              class="inline-flex items-center h-6 px-2 rounded text-xs font-medium text-white"
+              [ngClass]="labelColorClasses[i]"
             >
+              {{ label.labelName || label.color }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Due date section -->
+        <div *ngIf="description.dueDate" class="mb-4">
+          <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Due Date</h4>
+          <div class="flex items-center gap-2">
+            <fa-icon [icon]="faCalendarDay" class="text-gray-400 text-sm"></fa-icon>
+            <span class="text-sm text-gray-700">{{ formattedDueDate }}</span>
+          </div>
+        </div>
+
+        <!-- Description section -->
+        <div class="mb-4">
+          <div class="flex items-center gap-2 mb-2">
+            <fa-icon [icon]="faBars" class="text-gray-500"></fa-icon>
+            <h4 class="text-sm font-semibold text-gray-700">Description</h4>
+          </div>
+
+          <textarea
+            formControlName="textDescription"
+            (input)="onDescriptionChange($any($event.target).value)"
+            class="w-full min-h-[120px] p-3 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-y"
+            placeholder="Add a more detailed description..."
+          ></textarea>
+          <div
+            *ngIf="cardForm.get('textDescription')?.invalid && cardForm.get('textDescription')?.touched"
+            class="text-red-500 text-xs mt-1"
+          >
+            <span *ngIf="cardForm.get('textDescription')?.errors?.['maxlength']">M&aacute;ximo 200 caracteres</span>
+          </div>
+
+          <!-- Description preview with @mention highlighting -->
+          <div *ngIf="descriptionSegments.length > 0" class="mt-2">
+            <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">
               <ng-container *ngFor="let seg of descriptionSegments">
                 <span *ngIf="seg.isMention" class="text-blue-600 font-semibold">{{ seg.text }}</span><span *ngIf="!seg.isMention">{{ seg.text }}</span>
               </ng-container>
             </p>
-            <ng-template #emptyDesc>
-              <span class="text-sm text-gray-400">Add a more detailed description...</span>
-            </ng-template>
           </div>
-        </ng-container>
-        <ng-template #descEdit>
-          <div class="space-y-2">
-            <textarea
-              [(ngModel)]="descriptionDraft"
-              class="w-full min-h-[120px] p-3 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-y"
-              placeholder="Add a more detailed description..."
-              autofocus
-            ></textarea>
-            <div class="flex items-center gap-2">
-              <button
-                (click)="saveDescription()"
-                class="px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
-                type="button"
-              >
-                Save
-              </button>
-              <button
-                (click)="cancelEditDescription()"
-                class="px-3 py-1.5 text-gray-500 text-sm hover:text-gray-700 transition-colors"
-                type="button"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </ng-template>
+        </div>
+
+        <!-- Checklist section -->
+        <div *ngIf="description.checklist.length > 0" class="mb-4">
+          <app-checklist-group
+            *ngFor="let group of description.checklist; let i = index"
+            [group]="group"
+          ></app-checklist-group>
+        </div>
+
+        <!-- Activity section (stub) -->
+        <div class="mb-4">
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Activity</h4>
+          <p class="text-sm text-gray-400 italic">Activity tracking coming soon.</p>
+        </div>
       </div>
 
-      <!-- Checklist section -->
-      <div *ngIf="description.checklist.length > 0" class="mb-4">
-        <app-checklist-group
-          *ngFor="let group of description.checklist; let i = index"
-          [group]="group"
-          (groupChange)="onChecklistGroupChange(i, $event)"
-          (groupDelete)="onChecklistGroupDelete(i)"
-        ></app-checklist-group>
-      </div>
-
-      <!-- Add checklist button -->
-      <div class="mb-4">
-        <ng-container *ngIf="!addingChecklist; else addChecklistForm">
+      <!-- Right sidebar: ADD TO CARD -->
+      <div class="w-44 shrink-0">
+        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+          Add to card
+        </h4>
+        <div class="space-y-1.5">
           <button
-            (click)="startAddChecklist()"
-            class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm rounded transition-colors"
+            (click)="toggleMemberPicker()"
+            class="w-full flex items-center gap-2 px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm rounded transition-colors text-left"
             type="button"
           >
-            <fa-icon [icon]="faCheckSquare" class="text-xs"></fa-icon>
-            <span>Add checklist</span>
+            <fa-icon [icon]="faUser" class="text-xs"></fa-icon>
+            <span>Members</span>
           </button>
-        </ng-container>
-        <ng-template #addChecklistForm>
-          <div class="space-y-2">
-            <input
-              type="text"
-              [(ngModel)]="newChecklistName"
-              placeholder="Checklist title..."
-              class="w-full text-sm px-3 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-              autofocus
-            />
-            <div class="flex items-center gap-2">
-              <button
-                (click)="submitNewChecklist()"
-                class="px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
-                type="button"
-              >
-                Add
-              </button>
-              <button
-                (click)="cancelAddChecklist()"
-                class="px-3 py-1.5 text-gray-500 text-sm hover:text-gray-700 transition-colors"
-                type="button"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </ng-template>
-      </div>
+          <button
+            (click)="openLabelsModal()"
+            class="w-full flex items-center gap-2 px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm rounded transition-colors text-left"
+            type="button"
+          >
+            <fa-icon [icon]="faTag" class="text-xs"></fa-icon>
+            <span>Labels</span>
+          </button>
+          <button
+            (click)="openDueDateModal()"
+            class="w-full flex items-center gap-2 px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm rounded transition-colors text-left"
+            type="button"
+          >
+            <fa-icon [icon]="faClock" class="text-xs"></fa-icon>
+            <span>Dates</span>
+          </button>
+        </div>
 
-      <!-- Activity section (stub) -->
-      <div class="mb-4">
-        <h4 class="text-sm font-semibold text-gray-700 mb-2">Activity</h4>
-        <p class="text-sm text-gray-400 italic">Activity tracking coming soon.</p>
-      </div>
-    </div>
-
-    <!-- Right sidebar: ADD TO CARD -->
-    <div class="w-44 shrink-0">
-      <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-        Add to card
-      </h4>
-      <div class="space-y-1.5">
-        <button
-          (click)="toggleMemberPicker()"
-          class="w-full flex items-center gap-2 px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm rounded transition-colors text-left"
-          type="button"
-        >
-          <fa-icon [icon]="faUser" class="text-xs"></fa-icon>
-          <span>Members</span>
-        </button>
-        <button
-          (click)="openLabelsModal()"
-          class="w-full flex items-center gap-2 px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm rounded transition-colors text-left"
-          type="button"
-        >
-          <fa-icon [icon]="faTag" class="text-xs"></fa-icon>
-          <span>Labels</span>
-        </button>
-        <button
-          (click)="startAddChecklist()"
-          class="w-full flex items-center gap-2 px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm rounded transition-colors text-left"
-          type="button"
-        >
-          <fa-icon [icon]="faCheckSquare" class="text-xs"></fa-icon>
-          <span>Checklist</span>
-        </button>
-        <button
-          (click)="openDueDateModal()"
-          class="w-full flex items-center gap-2 px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm rounded transition-colors text-left"
-          type="button"
-        >
-          <fa-icon [icon]="faClock" class="text-xs"></fa-icon>
-          <span>Dates</span>
-        </button>
-      </div>
-
-      <!-- Inline member picker -->
-      <div *ngIf="showMemberPicker" class="mt-3">
-        <app-member-picker
-          [members]="availableMembers"
-          (memberSelect)="onMemberSelect($event)"
-        ></app-member-picker>
+        <!-- Inline member picker -->
+        <div *ngIf="showMemberPicker" class="mt-3">
+          <app-member-picker
+            [members]="availableMembers"
+            (memberSelect)="onMemberSelect($event)"
+          ></app-member-picker>
+        </div>
       </div>
     </div>
   </div>
