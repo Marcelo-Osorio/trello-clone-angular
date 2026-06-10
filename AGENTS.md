@@ -60,4 +60,4 @@ To refresh the local file, run `postman_getCollection` via MCP and write the res
 - If there's a modify that require the change doom and styles, be willing to use angular material and cdk components `https://v15.material.angular.dev/`.
 - If there's a modify that require the change doom and styles, read the skills of tailwind.
 - If there's a urge to see external documentation use context7 MCP.
-- If it may find a component that is repeating its calling across serious components or modules, put it in our shared module `@src\app\modules\shared/`
+- If it may find a component that is repeating its calling across at least two components or modules, put it in our shared module `@src\app\modules\shared/`

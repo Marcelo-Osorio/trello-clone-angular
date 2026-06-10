@@ -25,7 +25,7 @@ describe('CardPreviewComponent', () => {
       textField: '',
       checklist: [],
       labels: [],
-      dueDates: [],
+      dueDate: '',
       ...desc,
     });
   }

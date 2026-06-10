@@ -53,8 +53,8 @@ export class SearchService {
     const dateSet = new Set<string>();
     for (const card of cards) {
       const desc = parseDescription(card.description);
-      for (const date of desc.dueDates) {
-        dateSet.add(date);
+      if (desc.dueDate) {
+        dateSet.add(desc.dueDate);
       }
     }
     return Array.from(dateSet).sort();
@@ -104,7 +104,7 @@ export class SearchService {
   private filterByDueDate(cards: Card[], date: string): Card[] {
     return cards.filter((card) => {
       const desc = parseDescription(card.description);
-      return desc.dueDates.includes(date);
+      return desc.dueDate === date;
     });
   }
 }
