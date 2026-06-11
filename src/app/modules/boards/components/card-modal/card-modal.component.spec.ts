@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { Dialog, DialogRef, DIALOG_DATA } from '@angular/cdk/dialog';
 
@@ -70,7 +70,7 @@ describe('CardModalComponent', () => {
 
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
-      imports: [ReactiveFormsModule, FontAwesomeModule],
+      imports: [FormsModule, ReactiveFormsModule, FontAwesomeModule],
       declarations: [CardModalComponent, ChecklistGroupComponent, MemberPickerComponent],
       providers: [
         { provide: DialogRef, useValue: dialogRefSpy },
@@ -163,7 +163,6 @@ describe('CardModalComponent', () => {
     expect((component as any).descriptionDraft).toBeUndefined();
     expect((component as any).editingTitle).toBeUndefined();
     expect((component as any).editingDescription).toBeUndefined();
-    expect((component as any).newChecklistName).toBeUndefined();
   });
 
   it('should NOT have save/cancel edit methods', () => {
@@ -171,9 +170,6 @@ describe('CardModalComponent', () => {
     expect((component as any).cancelEditTitle).toBeUndefined();
     expect((component as any).saveDescription).toBeUndefined();
     expect((component as any).cancelEditDescription).toBeUndefined();
-    expect((component as any).submitNewChecklist).toBeUndefined();
-    expect((component as any).startAddChecklist).toBeUndefined();
-    expect((component as any).onChecklistGroupDelete).toBeUndefined();
   });
 
   // --- Close ---
@@ -217,5 +213,44 @@ describe('CardModalComponent', () => {
     expect(component.showMemberPicker).toBe(true);
     component.toggleMemberPicker();
     expect(component.showMemberPicker).toBe(false);
+  });
+
+  // --- Checklist ---
+
+  it('should toggle addingChecklist flag', () => {
+    expect(component.addingChecklist).toBe(false);
+    component.toggleAddChecklist();
+    expect(component.addingChecklist).toBe(true);
+    component.toggleAddChecklist();
+    expect(component.addingChecklist).toBe(false);
+  });
+
+  it('should clear newChecklistName when toggling off', () => {
+    component.toggleAddChecklist();
+    component.newChecklistName = 'My Checklist';
+    component.toggleAddChecklist();
+    expect(component.newChecklistName).toBe('');
+  });
+
+  it('should add new checklist to form and description', () => {
+    component.newChecklistName = 'My Checklist';
+    component.submitNewChecklist();
+    
+    const checklistArray = component.cardForm.get('checklist') as any;
+    expect(checklistArray.length).toBe(1);
+    expect(checklistArray.at(0).get('groupName')!.value).toBe('My Checklist');
+    expect(component.description.checklist.length).toBe(1);
+    expect(component.description.checklist[0].groupName).toBe('My Checklist');
+    expect(component.addingChecklist).toBe(false);
+    expect(component.newChecklistName).toBe('');
+  });
+
+  it('should not add checklist with empty name', () => {
+    component.newChecklistName = '   ';
+    component.submitNewChecklist();
+    
+    const checklistArray = component.cardForm.get('checklist') as any;
+    expect(checklistArray.length).toBe(0);
+    expect(component.description.checklist.length).toBe(0);
   });
 });
