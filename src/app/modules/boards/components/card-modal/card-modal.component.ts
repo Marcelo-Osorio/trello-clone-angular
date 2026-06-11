@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { AbstractControl, FormGroup } from '@angular/forms';
+import { AbstractControl, FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Dialog, DialogRef, DIALOG_DATA } from '@angular/cdk/dialog';
 import {
   faClose,
@@ -49,6 +49,8 @@ export class CardModalComponent {
   description: CardDescription;
   availableMembers: User[] = [];
   showMemberPicker = false;
+  addingChecklist = false;
+  newChecklistName = '';
 
   constructor(
     private dialogRef: DialogRef,
@@ -165,6 +167,33 @@ export class CardModalComponent {
   // --- Members ---
   toggleMemberPicker(): void {
     this.showMemberPicker = !this.showMemberPicker;
+  }
+
+  // --- Checklist ---
+  toggleAddChecklist(): void {
+    this.addingChecklist = !this.addingChecklist;
+    if (!this.addingChecklist) {
+      this.newChecklistName = '';
+    }
+  }
+
+  submitNewChecklist(): void {
+    if (!this.newChecklistName.trim()) return;
+    
+    const checklistArray = this.cardForm.get('checklist') as any;
+    const newGroup = new FormGroup({
+      groupName: new FormControl(this.newChecklistName.trim(), [Validators.required, Validators.minLength(2), Validators.maxLength(20)]),
+      items: new FormArray([])
+    });
+    checklistArray.push(newGroup);
+    
+    this.description.checklist.push({
+      groupName: this.newChecklistName.trim(),
+      items: []
+    });
+    
+    this.newChecklistName = '';
+    this.addingChecklist = false;
   }
 
   // --- Close ---
