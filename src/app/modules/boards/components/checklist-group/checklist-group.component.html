@@ -1,4 +1,4 @@
-<div class="mt-4">
+<div class="mt-4" [formGroup]="groupForm">
   <!-- Header: expand toggle + title + progress -->
   <div class="flex items-center gap-2 mb-2">
     <button
@@ -16,13 +16,13 @@
           class="text-sm font-semibold text-gray-800 cursor-pointer hover:bg-gray-100 rounded px-1 py-0.5"
           (click)="startEditTitle()"
         >
-          {{ group.groupName }}
+          {{ groupName }}
         </h4>
       </ng-container>
       <ng-template #titleEdit>
         <input
           type="text"
-          [(ngModel)]="titleDraft"
+          formControlName="groupName"
           (blur)="saveTitle()"
           (keydown)="onTitleKeydown($event)"
           class="w-full text-sm font-semibold px-1 py-0.5 border border-blue-400 rounded focus:ring-2 focus:ring-blue-400 focus:outline-none"
@@ -68,38 +68,50 @@
     </div>
 
     <!-- Checklist items -->
-    <div class="space-y-1">
+    <div class="space-y-1" formArrayName="items">
       <div
-        *ngFor="let item of visibleItems; let i = index"
+        *ngFor="let entry of visibleItemGroups"
+        [formGroup]="entry.control"
         class="flex items-start gap-2 group"
       >
-        <button
-          (click)="toggleItem(i)"
-          class="mt-0.5 text-gray-400 hover:text-gray-600 shrink-0"
-          type="button"
-        >
-          <fa-icon [icon]="item.checked ? faCheckSquare : faSquare"></fa-icon>
-        </button>
+        <label class="mt-0.5 text-gray-400 hover:text-gray-600 shrink-0 cursor-pointer">
+          <input
+            type="checkbox"
+            formControlName="checked"
+            class="sr-only"
+            [attr.aria-label]="'Toggle ' + itemText(entry.control)"
+          />
+          <fa-icon [icon]="isItemChecked(entry.control) ? faCheckSquare : faSquare"></fa-icon>
+        </label>
 
-        <ng-container *ngIf="editingItemIndex !== i; else itemEdit">
+        <ng-container *ngIf="editingItemIndex !== entry.index; else itemEdit">
           <span
             class="text-sm flex-1 cursor-pointer hover:bg-gray-100 rounded px-1 py-0.5 break-words"
-            [ngClass]="item.checked ? 'line-through text-gray-400' : 'text-gray-700'"
-            (click)="startEditItem(i)"
+            [ngClass]="isItemChecked(entry.control) ? 'line-through text-gray-400' : 'text-gray-700'"
+            (click)="startEditItem(entry.index)"
           >
-            {{ item.item }}
+            {{ itemText(entry.control) }}
           </span>
         </ng-container>
         <ng-template #itemEdit>
           <input
             type="text"
-            [(ngModel)]="itemDraft"
+            formControlName="item"
             (blur)="saveItem()"
             (keydown)="onItemKeydown($event)"
             class="flex-1 text-sm px-1 py-0.5 border border-blue-400 rounded focus:ring-2 focus:ring-blue-400 focus:outline-none"
             autofocus
           />
         </ng-template>
+
+        <button
+          (click)="removeItem(entry.index)"
+          class="text-gray-300 hover:text-red-500 transition-colors p-1 opacity-0 group-hover:opacity-100"
+          type="button"
+          aria-label="Delete checklist item"
+        >
+          <fa-icon [icon]="faTrash" class="text-xs"></fa-icon>
+        </button>
       </div>
     </div>
 
@@ -120,6 +132,7 @@
           <input
             type="text"
             [(ngModel)]="newItemText"
+            [ngModelOptions]="{ standalone: true }"
             (keydown)="onNewItemKeydown($event)"
             placeholder="Enter item text..."
             class="w-full text-sm px-2 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:outline-none"

@@ -6,6 +6,7 @@ import {
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
 import { Dialog } from '@angular/cdk/dialog';
+import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subscription, tap } from 'rxjs';
 
 import { BoardsService } from '@services/boards.service';
@@ -15,6 +16,7 @@ import { BoardsCacheService } from '@services/boards-cache.service';
 import { ArchivedService } from '@services/archived.service';
 import { SearchService } from '@services/search.service';
 import { AuthService } from '@services/auth.service';
+import { LabelsService } from '@services/labels.service';
 import { Board } from '@models/board.model';
 import { Card } from '@models/card.model';
 import { List } from '@models/list.model';
@@ -22,6 +24,8 @@ import { User } from '@models/user.model';
 import { CardModalComponent } from '../../components/card-modal/card-modal.component';
 import { ArchivedModalComponent } from '../../components/archived-modal/archived-modal.component';
 import { RecentBoardsService } from '@services/recent-boards.service';
+import { parseDescription } from '@utils/parse-description';
+import { CustomValidators } from '@utils/validators';
 
 @Component({
   selector: 'app-board',
@@ -59,7 +63,9 @@ export class BoardComponent implements OnInit, OnDestroy {
     private searchService: SearchService,
     private authService: AuthService,
     private dialog: Dialog,
-    private recentBoardsService: RecentBoardsService
+    private recentBoardsService: RecentBoardsService,
+    private formBuilder: FormBuilder,
+    private labelsService: LabelsService,
   ) {}
 
   ngOnInit(): void {
@@ -301,9 +307,12 @@ export class BoardComponent implements OnInit, OnDestroy {
 
     if (!card) return;
 
+    const cardForm = this.buildCardForm(card);
+
     this.dialog
       .open<Card>(CardModalComponent, {
         data: {
+          cardForm,
           card,
           board: this.board,
           listTitle,
@@ -330,6 +339,41 @@ export class BoardComponent implements OnInit, OnDestroy {
     }
   }
 
+  private buildCardForm(card: Card): FormGroup {
+    const desc = parseDescription(card.description);
+    const labels = this.formBuilder.array(
+      desc.labels.map((label) =>
+        this.formBuilder.group({
+          labelName: [label.labelName],
+          color: [label.color],
+        }),
+      ),
+    ) as FormArray;
+    const checklist = this.formBuilder.array(
+      desc.checklist.map((group) =>
+        this.formBuilder.group({
+          groupName: [group.groupName],
+          items: this.formBuilder.array(
+            group.items.map((item) =>
+              this.formBuilder.group({
+                item: [item.item],
+                checked: [item.checked],
+              }),
+            ),
+          ),
+        }),
+      ),
+    ) as FormArray;
+
+    return this.formBuilder.group({
+      cardTitle: [card.title, [Validators.required, Validators.maxLength(25)]],
+      textDescription: [desc.textField, [Validators.maxLength(200)]],
+      labels,
+      checklist,
+      dueDate: [desc.dueDate, [CustomValidators.dateAfterNow()]],
+    });
+  }
+
   private loadBoard(id: number): void {
     this.loading = true;
     this.error = null;
@@ -338,6 +382,8 @@ export class BoardComponent implements OnInit, OnDestroy {
         this.recentBoardsService.pushBoard(board);
         this.board = board;
         this.lists = this.filterArchived(board);
+        const cards = this.lists.flatMap((list) => list.cards || []);
+        this.labelsService.initFromBoard(id, cards);
         this.loading = false;
 
         // Clean stale archived entries
