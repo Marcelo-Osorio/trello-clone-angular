@@ -1,4 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { FormArray, FormControl, FormGroup } from '@angular/forms';
 import {
   faTrash,
   faPlus,
@@ -7,8 +8,7 @@ import {
   faChevronDown,
   faChevronRight,
 } from '@fortawesome/free-solid-svg-icons';
-
-import { ChecklistGroup, ChecklistItem } from '@models/card.model';
+import { ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-checklist-group',
@@ -16,8 +16,7 @@ import { ChecklistGroup, ChecklistItem } from '@models/card.model';
   styleUrls: ['./checklist-group.component.scss'],
 })
 export class ChecklistGroupComponent {
-  @Input() group!: ChecklistGroup;
-  @Output() groupChange = new EventEmitter<ChecklistGroup>();
+  @Input() groupForm!: FormGroup;
   @Output() groupDelete = new EventEmitter<void>();
 
   faTrash = faTrash;
@@ -30,30 +29,49 @@ export class ChecklistGroupComponent {
   expanded = true;
   hideChecked = false;
   editingTitle = false;
-  titleDraft = '';
   addingItem = false;
   newItemText = '';
   editingItemIndex: number | null = null;
-  itemDraft = '';
+
+  @ViewChild('itemInput', { static: false }) itemInput!: ElementRef;
+
+  constructor(private cd: ChangeDetectorRef) {}
+
+  get groupNameControl(): FormControl {
+    return this.groupForm.get('groupName') as FormControl;
+  }
+
+  get groupName(): string {
+    return this.groupNameControl.value || '';
+  }
+
+  get items(): FormArray {
+    return this.groupForm.get('items') as FormArray;
+  }
+
+  get itemGroups(): FormGroup[] {
+    return this.items.controls as FormGroup[];
+  }
+
+  get visibleItemGroups(): { control: FormGroup; index: number }[] {
+    return this.itemGroups
+      .map((control, index) => ({ control, index }))
+      .filter(
+        ({ control }) => !this.hideChecked || !this.isItemChecked(control),
+      );
+  }
 
   get totalItems(): number {
-    return this.group.items.length;
+    return this.items.length;
   }
 
   get checkedItems(): number {
-    return this.group.items.filter((i) => i.checked).length;
+    return this.itemGroups.filter((item) => this.isItemChecked(item)).length;
   }
 
   get progressPercent(): number {
     if (this.totalItems === 0) return 0;
     return Math.round((this.checkedItems / this.totalItems) * 100);
-  }
-
-  get visibleItems(): ChecklistItem[] {
-    if (this.hideChecked) {
-      return this.group.items.filter((i) => !i.checked);
-    }
-    return this.group.items;
   }
 
   toggleExpanded(): void {
@@ -66,14 +84,12 @@ export class ChecklistGroupComponent {
 
   startEditTitle(): void {
     this.editingTitle = true;
-    this.titleDraft = this.group.groupName;
   }
 
   saveTitle(): void {
-    const trimmed = this.titleDraft.trim();
-    if (trimmed && trimmed !== this.group.groupName) {
-      this.group = { ...this.group, groupName: trimmed };
-      this.emitChange();
+    const trimmed = this.groupName.trim();
+    if (trimmed) {
+      this.groupNameControl.setValue(trimmed);
     }
     this.editingTitle = false;
   }
@@ -91,26 +107,33 @@ export class ChecklistGroupComponent {
   }
 
   toggleItem(index: number): void {
-    const items = [...this.group.items];
-    items[index] = { ...items[index], checked: !items[index].checked };
-    this.group = { ...this.group, items };
-    this.emitChange();
+    const checkedControl = this.itemGroups[index].get('checked');
+    checkedControl?.setValue(!checkedControl.value);
   }
 
   startEditItem(index: number): void {
     this.editingItemIndex = index;
-    this.itemDraft = this.group.items[index].item;
+    setTimeout(() => {
+      if (this.itemInput && this.itemInput.nativeElement) {
+        this.itemInput.nativeElement.focus();
+      }
+    }, 0);
+  }
+
+  trackByFn(index: number, item: { control: any; index: number }): number {
+    return item.index; // O usa una ID única si tus items la tienen
   }
 
   saveItem(): void {
     if (this.editingItemIndex === null) return;
-    const trimmed = this.itemDraft.trim();
+    const itemControl = this.itemGroups[this.editingItemIndex].get(
+      'item',
+    ) as FormControl;
+    const trimmed = (itemControl.value || '').trim();
     if (trimmed) {
-      const items = [...this.group.items];
-      items[this.editingItemIndex] = { ...items[this.editingItemIndex], item: trimmed };
-      this.group = { ...this.group, items };
-      this.emitChange();
+      itemControl.setValue(trimmed);
     }
+    console.log('testing ')
     this.editingItemIndex = null;
   }
 
@@ -134,11 +157,21 @@ export class ChecklistGroupComponent {
   submitNewItem(): void {
     const trimmed = this.newItemText.trim();
     if (!trimmed) return;
-    const newItem: ChecklistItem = { item: trimmed, checked: false };
-    this.group = { ...this.group, items: [...this.group.items, newItem] };
-    this.emitChange();
+    this.items.push(
+      new FormGroup({
+        item: new FormControl(trimmed),
+        checked: new FormControl(false),
+      }),
+    );
     this.newItemText = '';
     this.addingItem = false;
+  }
+
+  removeItem(index: number): void {
+    this.items.removeAt(index);
+    if (this.editingItemIndex === index) {
+      this.editingItemIndex = null;
+    }
   }
 
   cancelAddItem(): void {
@@ -158,7 +191,19 @@ export class ChecklistGroupComponent {
     this.groupDelete.emit();
   }
 
-  private emitChange(): void {
-    this.groupChange.emit(this.group);
+  itemTextControl(itemForm: FormGroup): FormControl {
+    return itemForm.get('item') as FormControl;
+  }
+
+  itemCheckedControl(itemForm: FormGroup): FormControl {
+    return itemForm.get('checked') as FormControl;
+  }
+
+  itemText(itemForm: FormGroup): string {
+    return this.itemTextControl(itemForm).value || '';
+  }
+
+  isItemChecked(itemForm: FormGroup): boolean {
+    return Boolean(this.itemCheckedControl(itemForm).value);
   }
 }

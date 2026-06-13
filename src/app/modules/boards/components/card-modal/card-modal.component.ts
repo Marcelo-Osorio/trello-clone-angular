@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { AbstractControl, FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormControl, FormGroup } from '@angular/forms';
 import { Dialog, DialogRef, DIALOG_DATA } from '@angular/cdk/dialog';
 import {
   faClose,
@@ -103,6 +103,14 @@ export class CardModalComponent {
     return this.cardForm.get('textDescription');
   }
 
+  get checklistArray(): FormArray {
+    return this.cardForm.get('checklist') as FormArray;
+  }
+
+  get checklistGroups(): FormGroup[] {
+    return this.checklistArray.controls as FormGroup[];
+  }
+
   // --- Form control write methods ---
 
   onTitleChange(value: string): void {
@@ -179,21 +187,19 @@ export class CardModalComponent {
 
   submitNewChecklist(): void {
     if (!this.newChecklistName.trim()) return;
-    
-    const checklistArray = this.cardForm.get('checklist') as any;
+
     const newGroup = new FormGroup({
-      groupName: new FormControl(this.newChecklistName.trim(), [Validators.required, Validators.minLength(2), Validators.maxLength(20)]),
-      items: new FormArray([])
+      groupName: new FormControl(this.newChecklistName.trim()),
+      items: new FormArray([]),
     });
-    checklistArray.push(newGroup);
-    
-    this.description.checklist.push({
-      groupName: this.newChecklistName.trim(),
-      items: []
-    });
-    
+    this.checklistArray.push(newGroup);
+
     this.newChecklistName = '';
     this.addingChecklist = false;
+  }
+
+  removeChecklistGroup(index: number): void {
+    this.checklistArray.removeAt(index);
   }
 
   // --- Close ---
