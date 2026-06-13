@@ -70,7 +70,7 @@
     <!-- Checklist items -->
     <div class="space-y-1" formArrayName="items">
       <div
-        *ngFor="let entry of visibleItemGroups"
+        *ngFor="let entry of visibleItemGroups; trackBy: trackByFn"
         [formGroup]="entry.control"
         class="flex items-start gap-2 group"
       >
@@ -95,12 +95,12 @@
         </ng-container>
         <ng-template #itemEdit>
           <input
+            #itemInput
             type="text"
             formControlName="item"
             (blur)="saveItem()"
             (keydown)="onItemKeydown($event)"
             class="flex-1 text-sm px-1 py-0.5 border border-blue-400 rounded focus:ring-2 focus:ring-blue-400 focus:outline-none"
-            autofocus
           />
         </ng-template>
 

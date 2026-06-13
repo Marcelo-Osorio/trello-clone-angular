@@ -8,6 +8,7 @@ import {
   faChevronDown,
   faChevronRight,
 } from '@fortawesome/free-solid-svg-icons';
+import { ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-checklist-group',
@@ -32,6 +33,10 @@ export class ChecklistGroupComponent {
   newItemText = '';
   editingItemIndex: number | null = null;
 
+  @ViewChild('itemInput', { static: false }) itemInput!: ElementRef;
+
+  constructor(private cd: ChangeDetectorRef) {}
+
   get groupNameControl(): FormControl {
     return this.groupForm.get('groupName') as FormControl;
   }
@@ -51,7 +56,9 @@ export class ChecklistGroupComponent {
   get visibleItemGroups(): { control: FormGroup; index: number }[] {
     return this.itemGroups
       .map((control, index) => ({ control, index }))
-      .filter(({ control }) => !this.hideChecked || !this.isItemChecked(control));
+      .filter(
+        ({ control }) => !this.hideChecked || !this.isItemChecked(control),
+      );
   }
 
   get totalItems(): number {
@@ -106,15 +113,27 @@ export class ChecklistGroupComponent {
 
   startEditItem(index: number): void {
     this.editingItemIndex = index;
+    setTimeout(() => {
+      if (this.itemInput && this.itemInput.nativeElement) {
+        this.itemInput.nativeElement.focus();
+      }
+    }, 0);
+  }
+
+  trackByFn(index: number, item: { control: any; index: number }): number {
+    return item.index; // O usa una ID única si tus items la tienen
   }
 
   saveItem(): void {
     if (this.editingItemIndex === null) return;
-    const itemControl = this.itemGroups[this.editingItemIndex].get('item') as FormControl;
+    const itemControl = this.itemGroups[this.editingItemIndex].get(
+      'item',
+    ) as FormControl;
     const trimmed = (itemControl.value || '').trim();
     if (trimmed) {
       itemControl.setValue(trimmed);
     }
+    console.log('testing ')
     this.editingItemIndex = null;
   }
 

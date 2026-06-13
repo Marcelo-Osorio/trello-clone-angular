@@ -55,6 +55,14 @@ To refresh the local file, run `postman_getCollection` via MCP and write the res
 - ESLint: `^8.33.0` with `@angular-eslint` v15.2.1
 - Karma / Jasmine for testing
 
+# Developer Rule: Handling Dynamic UI Focus & Lifecycle
+
+When UI elements (inputs, modals, dropdowns) are rendered dynamically via conditional templates (`*ngIf`, `ng-template`):
+
+1. **Avoid Native Autofocus:** HTML `autofocus` only works on initial page load. It will fail on dynamically injected elements, breaking keyboard navigation and blur events.
+2. **Use Template References:** Always mark the target element with a template reference variable (e.g., `#targetElement`) and query it via `@ViewChild` or `@ViewChildren`.
+3. **Execute Focus on Next Tick:** Wrap the `.focus()` logic inside a `setTimeout(() => { ... }, 0)` right after modifying the visibility state. This forces Angular to finish rendering the DOM before attempting to focus the element.
+
 ## Advices
 
 - If there's a modify that require the change doom and styles, be willing to use angular material and cdk components `https://v15.material.angular.dev/`.
