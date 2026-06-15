@@ -1,5 +1,4 @@
 <div class="bg-white rounded-lg shadow-xl w-80">
-  <!-- Header -->
   <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
     <h3 class="text-sm font-semibold text-gray-700">Due Date</h3>
     <button
@@ -12,94 +11,46 @@
     </button>
   </div>
 
-  <div class="p-4">
-    <!-- Month/Year navigation -->
-    <div class="flex items-center justify-between mb-3">
-      <button
-        (click)="prevMonth()"
-        class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500"
-        type="button"
-      >
-        <fa-icon [icon]="faChevronLeft" class="text-xs"></fa-icon>
-      </button>
-
-      <button
-        (click)="toggleYearPicker()"
-        class="text-sm font-semibold text-gray-700 hover:bg-gray-100 rounded px-2 py-1"
-        type="button"
-      >
-        {{ monthNames[viewMonth] }} {{ viewYear }}
-      </button>
-
-      <button
-        (click)="nextMonth()"
-        class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500"
-        type="button"
-      >
-        <fa-icon [icon]="faChevronRight" class="text-xs"></fa-icon>
-      </button>
-    </div>
-
-    <!-- Year picker -->
-    <div *ngIf="showYearPicker" class="grid grid-cols-3 gap-1 mb-3">
-      <button
-        *ngFor="let year of yearRange"
-        (click)="selectYear(year)"
-        class="text-sm py-1 rounded hover:bg-gray-100"
-        [ngClass]="year === viewYear ? 'bg-blue-100 text-blue-700 font-semibold' : 'text-gray-700'"
-        type="button"
-      >
-        {{ year }}
-      </button>
-    </div>
-
-    <!-- Calendar grid -->
-    <div class="grid grid-cols-7 gap-0.5 text-center mb-3">
-      <!-- Day headers -->
-      <div
-        *ngFor="let day of dayNames"
-        class="text-xs text-gray-400 font-medium py-1"
-      >
-        {{ day }}
+  <div class="p-4 space-y-4">
+    <div class="space-y-2">
+      <label for="due-date-input" class="block text-xs font-semibold uppercase tracking-wide text-gray-500">
+        Select a date
+      </label>
+      <div class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-400">
+        <input
+          id="due-date-input"
+          matInput
+          [matDatepicker]="picker"
+          [min]="today"
+          [ngModel]="selectedDate"
+          [ngModelOptions]="{ standalone: true }"
+          (dateChange)="onDateChange($event.value || null)"
+          class="w-full border-0 bg-transparent p-0 text-sm text-gray-700 focus:outline-none"
+          placeholder="dd/mm/yyyy"
+          readonly
+        />
+        <button
+          (click)="picker.open()"
+          class="rounded px-2 py-1 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-50"
+          type="button"
+        >
+          Calendar
+        </button>
+        <mat-datepicker #picker></mat-datepicker>
       </div>
-
-      <!-- Day cells -->
-      <button
-        *ngFor="let day of calendarDays"
-        [disabled]="day === null || isDisabled(day)"
-        (click)="day !== null && selectDay(day)"
-        class="w-8 h-8 text-xs rounded flex items-center justify-center mx-auto transition-colors"
-        [ngClass]="{
-          'text-gray-300 cursor-not-allowed': day !== null && isDisabled(day),
-          'bg-blue-600 text-white font-bold': day !== null && isSelected(day),
-          'hover:bg-gray-100 text-gray-700': day !== null && !isDisabled(day) && !isSelected(day),
-          'ring-1 ring-blue-300': day !== null && isToday(day) && !isSelected(day)
-        }"
-        type="button"
-      >
-        {{ day }}
-      </button>
     </div>
 
-    <!-- Time picker -->
-    <div class="flex items-center gap-2 mb-4">
-      <span class="text-sm text-gray-600">Time:</span>
-      <select
-        [(ngModel)]="selectedHour"
-        class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-      >
-        <option *ngFor="let h of hours" [ngValue]="h">{{ pad(h) }}</option>
-      </select>
-      <span class="text-gray-500">:</span>
-      <select
-        [(ngModel)]="selectedMinute"
-        class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-      >
-        <option *ngFor="let m of minutes" [ngValue]="m">{{ pad(m) }}</option>
-      </select>
+    <div *ngIf="formattedSelectedDate" class="rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-600">
+      Selected date: <span class="font-medium text-gray-800">{{ formattedSelectedDate }}</span>
     </div>
 
-    <!-- Actions -->
+    <p
+      *ngIf="dueDateControl?.invalid && dueDateControl?.touched"
+      class="text-xs text-red-500"
+    >
+      Please choose a valid future date.
+    </p>
+
     <div class="flex items-center gap-2">
       <button
         (click)="save()"

@@ -1,7 +1,8 @@
 <div class="bg-white rounded-lg shadow-xl w-80">
-  <!-- Header -->
   <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-    <h3 class="text-sm font-semibold text-gray-700">Labels</h3>
+    <h3 class="text-sm font-semibold text-gray-700">
+      {{ mode === 'view' ? 'Labels' : 'Edit label' }}
+    </h3>
     <button
       (click)="close()"
       class="text-gray-400 hover:text-gray-600 transition-colors p-1"
@@ -12,13 +13,11 @@
     </button>
   </div>
 
-  <!-- Labels list -->
-  <div class="p-4 space-y-2">
+  <div *ngIf="mode === 'view'; else editMode" class="p-4 space-y-2">
     <div
-      *ngFor="let color of availableColors; let i = index"
+      *ngFor="let color of availableColors; trackBy: trackByColor"
       class="flex items-center gap-2"
     >
-      <!-- Selection checkbox area -->
       <button
         (click)="toggleLabel(color)"
         class="w-6 h-6 flex items-center justify-center rounded border border-gray-300 hover:border-gray-400 transition-colors shrink-0"
@@ -32,33 +31,76 @@
         ></fa-icon>
       </button>
 
-      <!-- Color bar + name -->
       <div
-        class="flex-1 flex items-center rounded px-3 py-2 cursor-pointer"
+        class="flex-1 flex items-center rounded px-3 py-2"
         [ngClass]="colorBgMap[color]"
-        (click)="toggleLabel(color)"
       >
-        <ng-container *ngIf="editingIndex !== i; else editName">
-          <span
-            class="text-sm font-medium text-white truncate cursor-text"
-            (click)="$event.stopPropagation(); startEdit(i)"
-          >
-            {{ labels[i]?.labelName || '' }}
-          </span>
-        </ng-container>
-        <ng-template #editName>
-          <input
-            type="text"
-            [(ngModel)]="editDraft"
-            (blur)="saveEdit()"
-            (keydown)="onEditKeydown($event)"
-            (click)="$event.stopPropagation()"
-            class="w-full text-sm px-1 py-0 bg-white rounded border-0 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-            placeholder="Label name..."
-            autofocus
-          />
-        </ng-template>
+        <span class="text-sm font-medium text-white truncate">
+          {{ getLabelName(color) }}
+        </span>
       </div>
+
+      <button
+        (click)="openEditMode(color)"
+        class="rounded px-2 py-1 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100"
+        type="button"
+      >
+        Edit
+      </button>
     </div>
   </div>
+
+  <ng-template #editMode>
+    <div class="p-4 space-y-4">
+      <div class="space-y-2">
+        <label for="label-name-input" class="block text-xs font-semibold uppercase tracking-wide text-gray-500">
+          Name
+        </label>
+        <input
+          #editInput
+          id="label-name-input"
+          type="text"
+          [(ngModel)]="editDraft"
+          [ngModelOptions]="{ standalone: true }"
+          (keydown)="onEditKeydown($event)"
+          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          placeholder="Label name"
+        />
+      </div>
+
+      <div class="space-y-2">
+        <span class="block text-xs font-semibold uppercase tracking-wide text-gray-500">Color</span>
+        <div class="grid grid-cols-3 gap-2">
+          <button
+            *ngFor="let color of availableColors; trackBy: trackByColor"
+            [disabled]="!isEditColorAvailable(color)"
+            class="h-10 rounded-lg transition-opacity"
+            [ngClass]="[
+              colorBgMap[color],
+              color === editingColor ? 'ring-2 ring-offset-2 ring-gray-700' : '',
+              isEditColorAvailable(color) ? 'opacity-100' : 'cursor-not-allowed opacity-30'
+            ]"
+            type="button"
+          ></button>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between gap-2">
+        <button
+          (click)="backToViewMode()"
+          class="rounded px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100"
+          type="button"
+        >
+          Back
+        </button>
+        <button
+          (click)="saveEdit()"
+          class="rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+          type="button"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </ng-template>
 </div>

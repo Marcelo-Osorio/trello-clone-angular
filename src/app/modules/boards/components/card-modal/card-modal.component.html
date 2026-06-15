@@ -37,11 +37,11 @@
       <!-- Main content area -->
       <div class="flex-1 min-w-0">
         <!-- Labels section -->
-        <div *ngIf="description.labels.length > 0" class="mb-4">
+        <div *ngIf="selectedLabels.length > 0" class="mb-4">
           <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Labels</h4>
           <div class="flex gap-1 flex-wrap">
             <span
-              *ngFor="let label of description.labels; let i = index"
+              *ngFor="let label of selectedLabels; let i = index"
               class="inline-flex items-center h-6 px-2 rounded text-xs font-medium text-white"
               [ngClass]="labelColorClasses[i]"
             >
@@ -51,7 +51,7 @@
         </div>
 
         <!-- Due date section -->
-        <div *ngIf="description.dueDate" class="mb-4">
+        <div *ngIf="dueDateControl?.value" class="mb-4">
           <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Due Date</h4>
           <div class="flex items-center gap-2">
             <fa-icon [icon]="faCalendarDay" class="text-gray-400 text-sm"></fa-icon>
@@ -77,15 +77,6 @@
             class="text-red-500 text-xs mt-1"
           >
             <span *ngIf="cardForm.get('textDescription')?.errors?.['maxlength']">M&aacute;ximo 200 caracteres</span>
-          </div>
-
-          <!-- Description preview with @mention highlighting -->
-          <div *ngIf="descriptionSegments.length > 0" class="mt-2">
-            <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">
-              <ng-container *ngFor="let seg of descriptionSegments">
-                <span *ngIf="seg.isMention" class="text-blue-600 font-semibold">{{ seg.text }}</span><span *ngIf="!seg.isMention">{{ seg.text }}</span>
-              </ng-container>
-            </p>
           </div>
         </div>
 

@@ -5,6 +5,9 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { CdkAccordionModule } from '@angular/cdk/accordion';
 import { DialogModule } from '@angular/cdk/dialog';
 import { ScrollingModule } from '@angular/cdk/scrolling';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatInputModule } from '@angular/material/input';
+import { MatNativeDateModule } from '@angular/material/core';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { RouterModule } from '@angular/router';
 
@@ -59,6 +62,9 @@ import { InviteDialogComponent } from './components/invite-dialog/invite-dialog.
     CdkAccordionModule,
     DialogModule,
     ScrollingModule,
+    MatDatepickerModule,
+    MatInputModule,
+    MatNativeDateModule,
     FontAwesomeModule,
     ReactiveFormsModule,
     RouterModule,
