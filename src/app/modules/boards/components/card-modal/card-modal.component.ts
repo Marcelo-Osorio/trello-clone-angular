@@ -132,8 +132,6 @@ export class CardModalComponent {
   openLabelsModal(): void {
     this.dialog.open(LabelsModalComponent, {
       data: {
-        boardId: this.board.id,
-        cardId: this.card.id,
         cardForm: this.cardForm,
       },
     });

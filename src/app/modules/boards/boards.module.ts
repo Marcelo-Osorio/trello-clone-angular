@@ -8,6 +8,7 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { RouterModule } from '@angular/router';
 
@@ -31,6 +32,7 @@ import { MemberPickerComponent } from './components/member-picker/member-picker.
 import { SearchPanelComponent } from './components/search-panel/search-panel.component';
 import { ArchivedModalComponent } from './components/archived-modal/archived-modal.component';
 import { InviteDialogComponent } from './components/invite-dialog/invite-dialog.component';
+import { ValidationPopupComponent } from './components/validation-popup/validation-popup.component';
 
 @NgModule({
   declarations: [
@@ -52,6 +54,7 @@ import { InviteDialogComponent } from './components/invite-dialog/invite-dialog.
     SearchPanelComponent,
     ArchivedModalComponent,
     InviteDialogComponent,
+    ValidationPopupComponent,
   ],
   imports: [
     CommonModule,
@@ -65,6 +68,7 @@ import { InviteDialogComponent } from './components/invite-dialog/invite-dialog.
     MatDatepickerModule,
     MatInputModule,
     MatNativeDateModule,
+    MatCheckboxModule,
     FontAwesomeModule,
     ReactiveFormsModule,
     RouterModule,

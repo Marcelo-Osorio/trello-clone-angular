@@ -18,18 +18,11 @@
       *ngFor="let color of availableColors; trackBy: trackByColor"
       class="flex items-center gap-2"
     >
-      <button
-        (click)="toggleLabel(color)"
-        class="w-6 h-6 flex items-center justify-center rounded border border-gray-300 hover:border-gray-400 transition-colors shrink-0"
-        [ngClass]="isSelected(color) ? 'bg-blue-100 border-blue-400' : ''"
-        type="button"
-      >
-        <fa-icon
-          *ngIf="isSelected(color)"
-          [icon]="faCheck"
-          class="text-blue-600 text-xs"
-        ></fa-icon>
-      </button>
+      <mat-checkbox
+        class="shrink-0"
+        [checked]="isSelected(color)"
+        (change)="toggleLabel(color, $event.checked)"
+      ></mat-checkbox>
 
       <div
         class="flex-1 flex items-center rounded px-3 py-2"
@@ -73,12 +66,11 @@
         <div class="grid grid-cols-3 gap-2">
           <button
             *ngFor="let color of availableColors; trackBy: trackByColor"
-            [disabled]="!isEditColorAvailable(color)"
-            class="h-10 rounded-lg transition-opacity"
+            (click)="selectEditColor(color)"
+            class="h-10 rounded-lg transition-all"
             [ngClass]="[
               colorBgMap[color],
-              color === editingColor ? 'ring-2 ring-offset-2 ring-gray-700' : '',
-              isEditColorAvailable(color) ? 'opacity-100' : 'cursor-not-allowed opacity-30'
+              color === editingColor ? 'ring-2 ring-offset-2 ring-gray-700' : ''
             ]"
             type="button"
           ></button>

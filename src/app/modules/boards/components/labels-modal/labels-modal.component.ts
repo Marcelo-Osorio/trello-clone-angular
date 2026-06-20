@@ -8,14 +8,12 @@ import {
 import { DialogRef, DIALOG_DATA } from '@angular/cdk/dialog';
 import { FormArray, FormControl, FormGroup } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { faCheck, faClose } from '@fortawesome/free-solid-svg-icons';
+import { faClose } from '@fortawesome/free-solid-svg-icons';
 
 import { Label, LabelColor } from '@models/card.model';
 import { LabelsService } from '@services/labels.service';
 
 interface LabelsModalInput {
-  boardId: number;
-  cardId: number;
   cardForm: FormGroup;
 }
 
@@ -46,7 +44,6 @@ export class LabelsModalComponent implements OnDestroy {
   @ViewChild('editInput', { static: false })
   editInput?: ElementRef<HTMLInputElement>;
 
-  faCheck = faCheck;
   faClose = faClose;
   readonly availableColors = FIXED_COLORS;
 
@@ -54,9 +51,8 @@ export class LabelsModalComponent implements OnDestroy {
   mode: 'view' | 'edit' = 'view';
   editingColor: LabelColor | null = null;
   editDraft = '';
+  private localLabelNames: Partial<Record<LabelColor, string>> = {};
 
-  private readonly boardId: number;
-  private readonly cardId: number;
   private readonly cardForm: FormGroup;
   private readonly labelsSubscription: Subscription;
 
@@ -65,17 +61,17 @@ export class LabelsModalComponent implements OnDestroy {
     private labelsService: LabelsService,
     @Inject(DIALOG_DATA) data: LabelsModalInput,
   ) {
-    this.boardId = data.boardId;
-    this.cardId = data.cardId;
     this.cardForm = data.cardForm;
     this.labelsSubscription = this.labelsService
       .getLabels$()
       .subscribe((labels) => {
         this.labels = labels;
+        this.syncLocalLabelNames();
         if (this.editingColor && this.mode === 'edit') {
           this.editDraft = this.getLabelName(this.editingColor);
         }
       });
+    this.syncLocalLabelNames();
   }
 
   ngOnDestroy(): void {
@@ -91,35 +87,35 @@ export class LabelsModalComponent implements OnDestroy {
   }
 
   get currentLabels(): Label[] {
-    return this.labelsArray.value as Label[];
+    return this.labelsArray.getRawValue() as Label[];
   }
 
   isSelected(color: LabelColor): boolean {
     return this.currentLabels.some((label) => label.color === color);
   }
 
-  toggleLabel(color: LabelColor): void {
-    if (this.isSelected(color)) {
-      const labelIndex = this.currentLabels.findIndex(
-        (label) => label.color === color,
-      );
+  toggleLabel(color: LabelColor, checked: boolean): void {
+    if (!checked) {
+      const labelIndex = this.currentLabels.findIndex((label) => label.color === color);
       if (labelIndex !== -1) {
         this.labelsArray.removeAt(labelIndex);
       }
 
-      this.labelsService.removeLabelFromCard(this.boardId, color, this.cardId);
+      if (this.editingColor === color) {
+        this.backToViewMode();
+      }
+
       return;
     }
 
-    const label = this.labelsService.toggleLabel(
-      this.boardId,
-      color,
-      this.cardId,
-    );
+    if (this.isSelected(color)) {
+      return;
+    }
+
     this.labelsArray.push(
       new FormGroup({
-        labelName: new FormControl(label.labelName),
-        color: new FormControl(label.color),
+        labelName: new FormControl(this.getLabelName(color)),
+        color: new FormControl(color),
       }),
     );
   }
@@ -135,25 +131,30 @@ export class LabelsModalComponent implements OnDestroy {
     }, 0);
   }
 
+  selectEditColor(color: LabelColor): void {
+    this.editingColor = color;
+    this.editDraft = this.getLabelName(color);
+
+    setTimeout(() => {
+      this.editInput?.nativeElement.focus();
+      this.editInput?.nativeElement.select();
+    }, 0);
+  }
+
   saveEdit(): void {
     if (!this.editingColor) {
       return;
     }
 
-    const trimmed = this.editDraft.trim();
-    if (!trimmed) {
-      return;
-    }
-
-    this.labelsService.renameLabel(this.boardId, this.editingColor, trimmed);
+    const labelName = this.editDraft.trim() || this.labelsService.getAutoName(this.editingColor);
+    this.localLabelNames[this.editingColor] = labelName;
 
     const selectedLabelIndex = this.currentLabels.findIndex(
       (label) => label.color === this.editingColor,
     );
+
     if (selectedLabelIndex !== -1) {
-      this.labelsArray
-        .at(selectedLabelIndex)
-        .patchValue({ labelName: trimmed });
+      this.labelsArray.at(selectedLabelIndex).patchValue({ labelName });
     }
 
     this.backToViewMode();
@@ -178,13 +179,24 @@ export class LabelsModalComponent implements OnDestroy {
   }
 
   getLabelName(color: LabelColor): string {
-    const selectedLabel = this.currentLabels.find(
-      (label) => label.color === color,
-    );
+    const localLabelName = this.localLabelNames[color];
+    if (localLabelName) {
+      return localLabelName;
+    }
+
+    const selectedLabel = this.currentLabels.find((label) => label.color === color);
     if (selectedLabel?.labelName) {
       return selectedLabel.labelName;
     }
 
+    return this.getPersistedLabelName(color);
+  }
+
+  trackByColor(_: number, color: LabelColor): LabelColor {
+    return color;
+  }
+
+  private getPersistedLabelName(color: LabelColor): string {
     const boardLabel = this.labels.find((label) => label.color === color);
     if (boardLabel?.labelName) {
       return boardLabel.labelName;
@@ -193,15 +205,13 @@ export class LabelsModalComponent implements OnDestroy {
     return this.labelsService.getAutoName(color);
   }
 
-  isEditColorAvailable(color: LabelColor): boolean {
-    if (color === this.editingColor) {
-      return true;
+  private syncLocalLabelNames(): void {
+    for (const color of this.availableColors) {
+      if (!this.localLabelNames[color]) {
+        const selectedLabel = this.currentLabels.find((label) => label.color === color);
+        this.localLabelNames[color] =
+          selectedLabel?.labelName || this.getPersistedLabelName(color);
+      }
     }
-
-    return !this.labels.some((label) => label.color === color);
-  }
-
-  trackByColor(_: number, color: LabelColor): LabelColor {
-    return color;
   }
 }
