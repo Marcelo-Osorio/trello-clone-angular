@@ -62,7 +62,7 @@ To refresh the local file, run `postman_getCollection` via MCP and write the res
 1. **Avoid Native Autofocus:** HTML `autofocus` only works on initial page load. It will fail on dynamically injected elements, breaking keyboard navigation and blur events.
 2. **Use Template References:** Always mark the target element with a template reference variable (e.g., `#targetElement`) and query it via `@ViewChild` or `@ViewChildren`.
 3. **Execute Focus on Next Tick:** Wrap the `.focus()` logic inside a `setTimeout(() => { ... }, 0)` right after modifying the visibility state. This forces Angular to finish rendering the DOM before attempting to focus the element.
-4. **Proposal a message commit:** : After builded a feature, bug or refactor, proposal a commit message
+4. **Proposal a message commit:** : After builded a feature, bug or refactor, proposal a commit message under this rule <{action}(what it affects 'only one word -> board-cards') : message resume> where action could be refactor, bugs or feature
 
 > Process of install external resources :
 1. **Installations new tools or libraries:** Always ask first before to install external library or tool and explain why you need it.

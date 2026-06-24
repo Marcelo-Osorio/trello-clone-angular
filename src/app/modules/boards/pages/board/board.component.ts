@@ -67,6 +67,7 @@ export class BoardComponent implements OnInit, OnDestroy {
   showAddListForm = false;
   newListTitle = '';
   currentUser: User | null = null;
+  private allLists: List[] = [];
 
   private paramsSub: Subscription | null = null;
   private authSub: Subscription | null = null;
@@ -143,7 +144,6 @@ export class BoardComponent implements OnInit, OnDestroy {
       .open<void>(ArchivedModalComponent, {
         data: {
           boardId: this.board.id,
-          lists: this.lists,
         },
       })
       .closed.subscribe(() => {
@@ -263,29 +263,15 @@ export class BoardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const currentList = this.lists.find((candidate) => candidate.id === list.id);
+    const currentList = this.allLists.find((candidate) => candidate.id === list.id);
     if (!currentList) {
       return;
     }
 
     const didArchive = this.archivedService.archiveList(this.board.id, currentList);
     if (didArchive) {
-      this.lists = this.lists.filter((candidate) => candidate.id !== currentList.id);
+      this.updateVisibleLists(this.board.id);
     }
-  }
-
-  onArchiveAllCards(listId: number): void {
-    if (!this.board) {
-      return;
-    }
-    const list = this.lists.find((l) => l.id === listId);
-    if (!list || !list.cards) {
-      return;
-    }
-    list.cards.forEach((card) => {
-      this.archivedService.archiveCard(this.board!.id, card);
-    });
-    list.cards = [];
   }
 
   toggleAddListForm(): void {
@@ -311,7 +297,8 @@ export class BoardComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (newList) => {
           this.boardsCacheService.removeBoardDetail(this.board!.id);
-          this.lists.push(newList);
+          this.allLists.push(newList);
+          this.updateVisibleLists(this.board!.id);
           this.newListTitle = '';
           this.showAddListForm = false;
         },
@@ -419,11 +406,14 @@ export class BoardComponent implements OnInit, OnDestroy {
   }
 
   private refreshCardInLists(updatedCard: Card): void {
-    for (const list of this.lists) {
+    for (const list of this.allLists) {
       const cards = list.cards || [];
       const idx = cards.findIndex((c) => c.id === updatedCard.id);
       if (idx !== -1) {
         cards[idx] = updatedCard;
+        if (this.board) {
+          this.archivedService.updateArchivedList(this.board.id, list);
+        }
         break;
       }
     }
@@ -432,7 +422,7 @@ export class BoardComponent implements OnInit, OnDestroy {
   private findCardContext(
     cardId: number,
   ): { card: Card; listId: number; listTitle: string } | null {
-    for (const list of this.lists) {
+    for (const list of this.allLists) {
       const found = (list.cards || []).find(
         (candidate) => candidate.id === cardId,
       );
@@ -776,15 +766,16 @@ export class BoardComponent implements OnInit, OnDestroy {
       next: (board) => {
         this.recentBoardsService.pushBoard(board);
         this.board = board;
-        this.lists = this.filterArchived(board);
-        const cards = this.lists.flatMap((list) => list.cards || []);
+        this.allLists = this.createBoardLists(board);
+        const serverListIds = this.allLists.map((list) => list.id);
+
+        this.archivedService.cleanStale(id, serverListIds);
+        this.archivedService.syncArchivedLists(id, this.allLists);
+        this.updateVisibleLists(id);
+
+        const cards = this.allLists.flatMap((list) => list.cards || []);
         this.labelsService.initFromBoard(id, cards);
         this.loading = false;
-
-        // Clean stale archived entries
-        const serverListIds = (board.lists || []).map((l) => l.id);
-        const serverCardIds = (board.cards || []).map((c) => c.id);
-        this.archivedService.cleanStale(id, serverListIds, serverCardIds);
       },
       error: () => {
         this.error = 'Failed to load board. Please try again.';
@@ -793,24 +784,20 @@ export class BoardComponent implements OnInit, OnDestroy {
     });
   }
 
-  private filterArchived(board: Board): List[] {
+  private createBoardLists(board: Board): List[] {
+    return (board.lists || []).map((list) => ({
+      ...list,
+      cards: [...(list.cards || [])],
+    }));
+  }
+
+  private updateVisibleLists(boardId: number): void {
     const archivedListIds = new Set(
       this.archivedService
-        .getArchivedListIds(board.id)
+        .getArchivedListIds(boardId)
         .map((archivedListId) => archivedListId.listID),
     );
-    const archivedCardIds = new Set(
-      this.archivedService.getArchived(board.id).cards.map((card) => card.id),
-    );
 
-    const lists = board.lists || [];
-    return lists
-      .filter((list) => !archivedListIds.has(list.id))
-      .map((list) => ({
-        ...list,
-        cards: (list.cards || []).filter(
-          (card) => !archivedCardIds.has(card.id),
-        ),
-      }));
+    this.lists = this.allLists.filter((list) => !archivedListIds.has(list.id));
   }
 }

@@ -16,7 +16,6 @@
   </div>
 
   <div class="flex-1 overflow-y-auto px-5 py-4 space-y-6">
-    <!-- Archived Lists -->
     <section>
       <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">
         Archived Lists ({{ archivedLists.length }})
@@ -36,51 +35,6 @@
           <button
             (click)="onRecoverList(list.id)"
             class="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-50 hover:bg-blue-100 text-blue-600 rounded transition-colors"
-            type="button"
-          >
-            <fa-icon [icon]="faRotateLeft" class="text-xs"></fa-icon>
-            Recover
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Archived Cards -->
-    <section>
-      <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">
-        Archived Cards ({{ archivedCards.length }})
-      </h3>
-      <div *ngIf="archivedCards.length === 0" class="text-sm text-gray-400 italic py-2">
-        No archived cards
-      </div>
-
-      <!-- Target list selector -->
-      <div *ngIf="archivedCards.length > 0" class="mb-3">
-        <label class="block text-xs text-gray-500 mb-1">Recover to list:</label>
-        <select
-          [(ngModel)]="selectedListId"
-          class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        >
-          <option [value]="0" disabled>Select a list...</option>
-          <option *ngFor="let list of lists" [value]="list.id">{{ list.title }}</option>
-        </select>
-      </div>
-
-      <div class="space-y-2">
-        <div
-          *ngFor="let card of archivedCards"
-          class="flex items-center justify-between p-3 bg-gray-50 rounded-md border border-gray-200"
-        >
-          <div>
-            <div class="text-sm font-medium text-gray-800">{{ card.title }}</div>
-            <div *ngIf="card.list" class="text-xs text-gray-400">
-              Was in: {{ card.list.title }}
-            </div>
-          </div>
-          <button
-            (click)="onRecoverCard(card.id)"
-            [disabled]="!selectedListId"
-            class="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-50 hover:bg-blue-100 text-blue-600 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             type="button"
           >
             <fa-icon [icon]="faRotateLeft" class="text-xs"></fa-icon>

@@ -20,11 +20,14 @@ Done When :
 
 ## TASK-002 - REQ-002 Collecting archived lists
 Implementation : 
-- Refactor BoardComponent
-- Collect each list whose id already is in the service and send them to archived service as a list 
+- Collect each list whose id already is in the service and send them to archived service as a list in the loading of BoardComponent
+- Make BoardComponent and ArchivedService only works saving list, not cards anymore
+- Update ArchivedService if one list is updated because it was affected for labels updating 
+- Prevents displayed in BoardComponent of any list who has an id in ArchivedService such in loading of BoardComponent and also a list who had been updated because of a label updating 
 
 Done when : 
-- Prevent rendering of that list itself
+- Prevent rendering of those lists whose meet the conditions of have its id in the service 
+- Collection of lists in the loading of BoardComponent or list whose have been affect by labels upload 
 
 ---
 
@@ -36,4 +39,4 @@ Implementation :
 
 Done when :
 - List sended by ArchivedModalComponent was displayed in BoardComponent
-d
+

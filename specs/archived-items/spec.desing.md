@@ -31,7 +31,7 @@ Responsibilities:
 
 #### BoardComponent
 Responsibilities :
-- Before to render anything, filter archive lists through comparison for the set of ids lists
+- Before to render something, filter archive lists through comparison for the set of ids lists
 - Every list who already is in ArchivedService, will be put in our ArchivedService in session storage and prevent to be rendered
 - Event click BoardNavbarComponent will open a modal ArchivedModalComponent
 - ArchivedModalComponent emits list to be recover

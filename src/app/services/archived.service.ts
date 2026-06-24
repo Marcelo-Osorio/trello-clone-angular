@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
 
-import { ArchivedData } from '@models/card.model';
-import { Card } from '@models/card.model';
 import { List, ListID } from '@models/list.model';
 
 @Injectable({
@@ -14,10 +12,6 @@ export class ArchivedService {
 
   private getListsKey(boardId: number): string {
     return `archived_lists_${boardId}`;
-  }
-
-  private getCardsKey(boardId: number): string {
-    return `archived_cards_${boardId}`;
   }
 
   private parseStorageItem<T>(raw: string | null, fallback: T): T {
@@ -49,18 +43,11 @@ export class ArchivedService {
     return JSON.parse(JSON.stringify(list)) as List;
   }
 
-  private getArchivedCards(boardId: number): Card[] {
-    return this.parseStorageItem<Card[]>(
-      sessionStorage.getItem(this.getCardsKey(boardId)),
-      [],
-    );
-  }
-
-  private saveArchivedCards(boardId: number, cards: Card[]): boolean {
+  private saveArchivedLists(boardId: number, lists: List[]): boolean {
     return this.setStorageItem(
       sessionStorage,
-      this.getCardsKey(boardId),
-      cards,
+      this.getListsKey(boardId),
+      lists,
     );
   }
 
@@ -82,19 +69,6 @@ export class ArchivedService {
     return this.getArchivedListIds(boardId).some((item) => item.listID === listId);
   }
 
-  getArchived(boardId: number): ArchivedData {
-    return {
-      lists: this.getArchivedLists(boardId),
-      cards: this.getArchivedCards(boardId),
-    };
-  }
-
-  archiveCard(boardId: number, card: Card): void {
-    const cards = this.getArchivedCards(boardId);
-    cards.push(card);
-    this.saveArchivedCards(boardId, cards);
-  }
-
   archiveList(boardId: number, list: List): boolean {
     if (this.isListArchived(boardId, list.id)) {
       return false;
@@ -109,17 +83,12 @@ export class ArchivedService {
       return false;
     }
 
-    if (!this.setStorageItem(sessionStorage, this.getListsKey(boardId), nextLists)) {
+    if (!this.saveArchivedLists(boardId, nextLists)) {
       this.setStorageItem(localStorage, this.getListIdsKey(boardId), previousIds);
       return false;
     }
 
     return true;
-  }
-
-  recoverCard(boardId: number, cardId: number): void {
-    const cards = this.getArchivedCards(boardId).filter((card) => card.id !== cardId);
-    this.saveArchivedCards(boardId, cards);
   }
 
   recoverList(boardId: number, listId: number): void {
@@ -131,22 +100,41 @@ export class ArchivedService {
     );
 
     this.setStorageItem(localStorage, this.getListIdsKey(boardId), nextIds);
-    this.setStorageItem(sessionStorage, this.getListsKey(boardId), nextLists);
+    this.saveArchivedLists(boardId, nextLists);
   }
 
-  cleanStale(boardId: number, serverListIds: number[], serverCardIds: number[]): void {
+  syncArchivedLists(boardId: number, lists: List[]): void {
+    const archivedIds = new Set(
+      this.getArchivedListIds(boardId).map((item) => item.listID),
+    );
+    const nextLists = lists
+      .filter((list) => archivedIds.has(list.id))
+      .map((list) => this.cloneList(list));
+
+    this.saveArchivedLists(boardId, nextLists);
+  }
+
+  updateArchivedList(boardId: number, list: List): void {
+    if (!this.isListArchived(boardId, list.id)) {
+      return;
+    }
+
+    const archivedLists = this.getArchivedLists(boardId);
+    const nextLists = archivedLists.map((archivedList) =>
+      archivedList.id === list.id ? this.cloneList(list) : archivedList,
+    );
+
+    this.saveArchivedLists(boardId, nextLists);
+  }
+
+  cleanStale(boardId: number, serverListIds: number[]): void {
     const listIdSet = new Set(serverListIds);
-    const cardIdSet = new Set(serverCardIds);
     const lists = this.getArchivedLists(boardId).filter((list) => listIdSet.has(list.id));
     const listIds = this.getArchivedListIds(boardId).filter((item) =>
       listIdSet.has(item.listID),
     );
-    const cards = this.getArchivedCards(boardId).filter((card) =>
-      cardIdSet.has(card.id),
-    );
 
     this.setStorageItem(localStorage, this.getListIdsKey(boardId), listIds);
-    this.setStorageItem(sessionStorage, this.getListsKey(boardId), lists);
-    this.saveArchivedCards(boardId, cards);
+    this.saveArchivedLists(boardId, lists);
   }
 }

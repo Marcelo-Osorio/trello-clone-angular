@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, Output } from '@angular/core';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { faEllipsis, faPlus } from '@fortawesome/free-solid-svg-icons';
 
@@ -26,6 +26,8 @@ export class ListComponent {
   showAddForm = false;
   newCardTitle = '';
   menuOpen = false;
+
+  constructor(private elementRef: ElementRef<HTMLElement>) {}
 
   get cards(): Card[] {
     return this.list.cards || [];
@@ -71,6 +73,18 @@ export class ListComponent {
 
   toggleMenu(): void {
     this.menuOpen = !this.menuOpen;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.menuOpen) {
+      return;
+    }
+
+    const target = event.target as Node | null;
+    if (target && !this.elementRef.nativeElement.contains(target)) {
+      this.menuOpen = false;
+    }
   }
 
   closeMenu(): void {

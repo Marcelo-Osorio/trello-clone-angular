@@ -38,11 +38,17 @@ Acceptance Criteria :
    When there's at least one list id in the archived service, it means that it has to recover that same list again
    Then the list it will be sent to be saved in archived service
 
-2. Given a list sent to archived service
+2. Given a list sended to archived service
    Then save that list info in session storage
 
 3. Given a success recover list
    Then prevents the rendering of that list in the view page list
+
+4. Given an update of any label which will affect several cards and in consequence lists in a cascading fashion
+   When a label is update 
+   Then pick up info list updated 
+   Then if the list already is in the service update it
+   Then if not do nothing
 
 ### REQ-003: Management and showing archived lists
 > All of our list will be displayed in a modal with a preview of them and the capability to be recovered.
