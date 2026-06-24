@@ -19,6 +19,10 @@ export interface List {
   cards?: Card[];
 }
 
+export interface ListID {
+  listID: number;
+}
+
 export interface CreateListDto {
   title: string;
   boardId: number;

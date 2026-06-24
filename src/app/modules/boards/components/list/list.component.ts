@@ -17,8 +17,7 @@ export class ListComponent {
 
   @Output() cardDropped = new EventEmitter<CdkDragDrop<Card[]>>();
   @Output() addCard = new EventEmitter<{ listId: number; title: string }>();
-  @Output() archiveList = new EventEmitter<number>();
-  @Output() archiveAllCards = new EventEmitter<number>();
+  @Output() archiveList = new EventEmitter<List>();
   @Output() cardClick = new EventEmitter<number>();
 
   faEllipsis = faEllipsis;
@@ -79,12 +78,7 @@ export class ListComponent {
   }
 
   onArchiveList(): void {
-    this.archiveList.emit(this.list.id);
-    this.menuOpen = false;
-  }
-
-  onArchiveAllCards(): void {
-    this.archiveAllCards.emit(this.list.id);
+    this.archiveList.emit(this.list);
     this.menuOpen = false;
   }
 }

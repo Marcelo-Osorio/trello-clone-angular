@@ -140,7 +140,7 @@ describe('ListComponent', () => {
   it('should emit archiveList when onArchiveList is called', () => {
     spyOn(component.archiveList, 'emit');
     component.onArchiveList();
-    expect(component.archiveList.emit).toHaveBeenCalledWith(1);
+    expect(component.archiveList.emit).toHaveBeenCalledWith(component.list);
     expect(component.menuOpen).toBe(false);
   });
 

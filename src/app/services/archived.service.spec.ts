@@ -1,134 +1,140 @@
 import { TestBed } from '@angular/core/testing';
-import { ArchivedService } from './archived.service';
+
 import { Card } from '@models/card.model';
-import { List } from '@models/list.model';
+import { List, ListID } from '@models/list.model';
+
+import { ArchivedService } from './archived.service';
 
 describe('ArchivedService', () => {
   let service: ArchivedService;
   const boardId = 1;
-  const storageKey = `archived_${boardId}`;
+  const listIdsKey = `archived_list_ids_${boardId}`;
+  const listsKey = `archived_lists_${boardId}`;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(ArchivedService);
     localStorage.clear();
+    sessionStorage.clear();
   });
 
   afterEach(() => {
     localStorage.clear();
+    sessionStorage.clear();
   });
+
+  function createList(cards: Card[] = []): List {
+    return {
+      id: 10,
+      title: 'Archived List',
+      position: 0,
+      creationAt: '2026-01-01',
+      updatedAt: '2026-01-01',
+      cards,
+    };
+  }
+
+  function createCard(id: number, title: string): Card {
+    return {
+      id,
+      title,
+      position: 0,
+      creationAt: '2026-01-01',
+      updatedAt: '2026-01-01',
+    };
+  }
 
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('getArchived', () => {
-    it('should return empty structure when no data exists', () => {
-      const result = service.getArchived(boardId);
-      expect(result.lists.length).toBe(0);
-      expect(result.cards.length).toBe(0);
-    });
-
-    it('should return parsed data from localStorage', () => {
-      const data = {
-        lists: [{ id: 10, title: 'Done', position: 0, creationAt: '', updatedAt: '' }],
-        cards: [{ id: 20, title: 'Card 1', position: 0, creationAt: '', updatedAt: '' }],
-      };
-      localStorage.setItem(storageKey, JSON.stringify(data));
-
-      const result = service.getArchived(boardId);
-      expect(result.lists.length).toBe(1);
-      expect(result.cards.length).toBe(1);
-      expect(result.lists[0].id).toBe(10);
-      expect(result.cards[0].id).toBe(20);
-    });
+  it('should return empty archived list ids and lists when storage is empty', () => {
+    expect(service.getArchivedListIds(boardId)).toEqual([]);
+    expect(service.getArchivedLists(boardId)).toEqual([]);
+    expect(service.getArchived(boardId)).toEqual({ lists: [], cards: [] });
   });
 
-  describe('archiveCard', () => {
-    it('should append a card to archived cards', () => {
-      const card: Card = { id: 5, title: 'Old Card', position: 0, creationAt: '', updatedAt: '' };
-      service.archiveCard(boardId, card);
+  it('should archive a list in localStorage ids and sessionStorage payload', () => {
+    const list = createList([createCard(20, 'Card A')]);
 
-      const result = service.getArchived(boardId);
-      expect(result.cards.length).toBe(1);
-      expect(result.cards[0].id).toBe(5);
-      expect(result.lists.length).toBe(0);
-    });
+    const result = service.archiveList(boardId, list);
 
-    it('should append multiple cards', () => {
-      service.archiveCard(boardId, { id: 1, title: 'A', position: 0, creationAt: '', updatedAt: '' });
-      service.archiveCard(boardId, { id: 2, title: 'B', position: 0, creationAt: '', updatedAt: '' });
+    const storedIds = JSON.parse(localStorage.getItem(listIdsKey) || '[]') as ListID[];
+    const storedLists = JSON.parse(sessionStorage.getItem(listsKey) || '[]') as List[];
 
-      const result = service.getArchived(boardId);
-      expect(result.cards.length).toBe(2);
-    });
+    expect(result).toBeTrue();
+    expect(storedIds).toEqual([{ listID: 10 }]);
+    expect(storedLists.length).toBe(1);
+    expect(storedLists[0].cards?.length).toBe(1);
+    expect(storedLists[0].cards?.[0].title).toBe('Card A');
   });
 
-  describe('archiveList', () => {
-    it('should append a list and its cards', () => {
-      const list: List = { id: 10, title: 'Old List', position: 0, creationAt: '', updatedAt: '' };
-      const cards: Card[] = [
-        { id: 20, title: 'Card A', position: 0, creationAt: '', updatedAt: '' },
-      ];
+  it('should not archive the same list twice', () => {
+    const list = createList([createCard(20, 'Card A')]);
 
-      service.archiveList(boardId, list, cards);
-
-      const result = service.getArchived(boardId);
-      expect(result.lists.length).toBe(1);
-      expect(result.lists[0].id).toBe(10);
-      expect(result.cards.length).toBe(1);
-      expect(result.cards[0].id).toBe(20);
-    });
+    expect(service.archiveList(boardId, list)).toBeTrue();
+    expect(service.archiveList(boardId, list)).toBeFalse();
+    expect(service.getArchivedListIds(boardId)).toEqual([{ listID: 10 }]);
+    expect(service.getArchivedLists(boardId).length).toBe(1);
   });
 
-  describe('recoverCard', () => {
-    it('should remove a card from archived cards', () => {
-      service.archiveCard(boardId, { id: 1, title: 'A', position: 0, creationAt: '', updatedAt: '' });
-      service.archiveCard(boardId, { id: 2, title: 'B', position: 0, creationAt: '', updatedAt: '' });
+  it('should rollback the localStorage id when saving the list payload fails', () => {
+    const list = createList([createCard(20, 'Card A')]);
+    const originalSetItem = Storage.prototype.setItem;
 
-      service.recoverCard(boardId, 1);
+    spyOn(Storage.prototype, 'setItem').and.callFake(function (
+      this: Storage,
+      key: string,
+      value: string,
+    ): void {
+      if (key === listsKey) {
+        throw new Error('quota');
+      }
 
-      const result = service.getArchived(boardId);
-      expect(result.cards.length).toBe(1);
-      expect(result.cards[0].id).toBe(2);
+      originalSetItem.call(this, key, value);
     });
 
-    it('should do nothing if card not found', () => {
-      service.archiveCard(boardId, { id: 1, title: 'A', position: 0, creationAt: '', updatedAt: '' });
+    const result = service.archiveList(boardId, list);
 
-      service.recoverCard(boardId, 99);
-
-      const result = service.getArchived(boardId);
-      expect(result.cards.length).toBe(1);
-    });
+    expect(result).toBeFalse();
+    expect(service.getArchivedListIds(boardId)).toEqual([]);
+    expect(service.getArchivedLists(boardId)).toEqual([]);
   });
 
-  describe('recoverList', () => {
-    it('should remove a list and its cards', () => {
-      service.archiveList(boardId, { id: 10, title: 'List', position: 0, creationAt: '', updatedAt: '' }, [
-        { id: 20, title: 'Card', position: 0, creationAt: '', updatedAt: '' },
-      ]);
+  it('should recover a list from ids and stored payloads', () => {
+    const list = createList([createCard(20, 'Card A')]);
+    service.archiveList(boardId, list);
 
-      service.recoverList(boardId, 10);
+    service.recoverList(boardId, list.id);
 
-      const result = service.getArchived(boardId);
-      expect(result.lists.length).toBe(0);
-      expect(result.cards.length).toBe(0);
-    });
+    expect(service.getArchivedListIds(boardId)).toEqual([]);
+    expect(service.getArchivedLists(boardId)).toEqual([]);
   });
 
-  describe('cleanStale', () => {
-    it('should remove archived items not present on server', () => {
-      service.archiveList(boardId, { id: 10, title: 'Stale List', position: 0, creationAt: '', updatedAt: '' }, []);
-      service.archiveCard(boardId, { id: 20, title: 'Stale Card', position: 0, creationAt: '', updatedAt: '' });
-      service.archiveCard(boardId, { id: 21, title: 'Valid Card', position: 0, creationAt: '', updatedAt: '' });
-
-      service.cleanStale(boardId, [], [21]);
-
-      const result = service.getArchived(boardId);
-      expect(result.lists.length).toBe(0);
-      expect(result.cards.length).toBe(1);
-      expect(result.cards[0].id).toBe(21);
+  it('should clean stale archived lists using server list ids', () => {
+    service.archiveList(boardId, createList());
+    service.archiveList(boardId, {
+      id: 11,
+      title: 'Valid List',
+      position: 1,
+      creationAt: '2026-01-01',
+      updatedAt: '2026-01-01',
+      cards: [],
     });
+
+    service.cleanStale(boardId, [11], []);
+
+    expect(service.getArchivedListIds(boardId)).toEqual([{ listID: 11 }]);
+    expect(service.getArchivedLists(boardId).map((list) => list.id)).toEqual([11]);
+  });
+
+  it('should keep archived card compatibility for existing callers', () => {
+    service.archiveCard(boardId, createCard(30, 'Card Only'));
+
+    expect(service.getArchived(boardId).cards.map((card) => card.id)).toEqual([30]);
+
+    service.recoverCard(boardId, 30);
+
+    expect(service.getArchived(boardId).cards).toEqual([]);
   });
 });

@@ -258,16 +258,20 @@ export class BoardComponent implements OnInit, OnDestroy {
       });
   }
 
-  onArchiveList(listId: number): void {
+  onArchiveList(list: List): void {
     if (!this.board) {
       return;
     }
-    const list = this.lists.find((l) => l.id === listId);
-    if (!list) {
+
+    const currentList = this.lists.find((candidate) => candidate.id === list.id);
+    if (!currentList) {
       return;
     }
-    this.archivedService.archiveList(this.board.id, list, list.cards || []);
-    this.lists = this.lists.filter((l) => l.id !== listId);
+
+    const didArchive = this.archivedService.archiveList(this.board.id, currentList);
+    if (didArchive) {
+      this.lists = this.lists.filter((candidate) => candidate.id !== currentList.id);
+    }
   }
 
   onArchiveAllCards(listId: number): void {
@@ -790,9 +794,14 @@ export class BoardComponent implements OnInit, OnDestroy {
   }
 
   private filterArchived(board: Board): List[] {
-    const archived = this.archivedService.getArchived(board.id);
-    const archivedListIds = new Set(archived.lists.map((l) => l.id));
-    const archivedCardIds = new Set(archived.cards.map((c) => c.id));
+    const archivedListIds = new Set(
+      this.archivedService
+        .getArchivedListIds(board.id)
+        .map((archivedListId) => archivedListId.listID),
+    );
+    const archivedCardIds = new Set(
+      this.archivedService.getArchived(board.id).cards.map((card) => card.id),
+    );
 
     const lists = board.lists || [];
     return lists
