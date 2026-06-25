@@ -66,7 +66,7 @@ Acceptance Criteria :
 3. Given all list rendered into the modal ArchivedModalComponent
    When there's a click on recover (in some list)
    Then it'll be take off from archived service
-   Then it'll be add to view page list to be rendered
+   Then it'll be add to view page list to be rendered without having to close the modal
 
 ## Non-functional Requirements
 - The list must disappear without reloading the full page, such as ArchivedModalComponent and BoardComponent

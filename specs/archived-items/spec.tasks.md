@@ -33,7 +33,7 @@ Done when :
 
 ## TASK-003 - REQ-003 Management and showing archived lists
 Implementation :
-- Refactor ArchivedModalComponent
+- Rendered each list from our ArchivedService in ArchivedModalComponent 
 - Add layout specs in ArchivedModalComponent
 - ArchivedModalComponent send recovered list to BoardComponent
 

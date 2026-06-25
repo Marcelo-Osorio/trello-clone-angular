@@ -1,9 +1,8 @@
-<div class="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col">
-  <!-- Header -->
+<div class="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
   <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200">
     <h2 class="text-base font-semibold text-gray-800 flex items-center gap-2">
       <fa-icon [icon]="faArchive" class="text-gray-500"></fa-icon>
-      Archived Items
+      Archived Lists
     </h2>
     <button
       (click)="onClose()"
@@ -17,31 +16,65 @@
 
   <div class="flex-1 overflow-y-auto px-5 py-4 space-y-6">
     <section>
-      <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">
-        Archived Lists ({{ archivedLists.length }})
-      </h3>
-      <div *ngIf="archivedLists.length === 0" class="text-sm text-gray-400 italic py-2">
+      <div class="mb-3 flex items-center justify-between gap-3">
+        <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-600">
+          Archived Lists
+        </h3>
+        <span class="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-500">
+          {{ archivedLists.length }} total
+        </span>
+      </div>
+
+      <div *ngIf="archivedLists.length === 0" class="rounded-xl border border-dashed border-gray-300 bg-gray-50 px-4 py-6 text-center text-sm italic text-gray-400">
         No archived lists
       </div>
-      <div class="space-y-2">
-        <div
+
+      <mat-accordion *ngIf="archivedLists.length > 0" class="flex flex-col gap-3">
+        <mat-expansion-panel
           *ngFor="let list of archivedLists"
-          class="flex items-center justify-between p-3 bg-gray-50 rounded-md border border-gray-200"
+          class="overflow-hidden rounded-xl border border-gray-200 shadow-none"
         >
-          <div>
-            <div class="text-sm font-medium text-gray-800">{{ list.title }}</div>
-            <div class="text-xs text-gray-400">{{ list.cards?.length || 0 }} cards</div>
+          <mat-expansion-panel-header class="px-4 py-3">
+            <div class="flex w-full items-center gap-3 pr-2">
+              <button
+                (click)="onRecoverButtonClick($event, list.id)"
+                class="inline-flex shrink-0 items-center gap-1 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-100"
+                type="button"
+              >
+                <fa-icon [icon]="faRotateLeft" class="text-xs"></fa-icon>
+                Recover
+              </button>
+
+              <div class="min-w-0 flex-1">
+                <div class="truncate text-sm font-medium text-gray-800">{{ list.title }}</div>
+              </div>
+
+              <div class="shrink-0 text-xs font-medium text-gray-400">
+                {{ list.cards?.length || 0 }} cards
+              </div>
+            </div>
+          </mat-expansion-panel-header>
+
+          <div class="border-t border-gray-100 bg-gray-50 px-4 py-3">
+            <div class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+              Card Preview
+            </div>
+
+            <div *ngIf="(list.cards?.length || 0) === 0" class="text-sm italic text-gray-400">
+              No cards in this list
+            </div>
+
+            <ul *ngIf="(list.cards?.length || 0) > 0" class="space-y-2">
+              <li
+                *ngFor="let card of list.cards"
+                class="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700"
+              >
+                {{ card.title }}
+              </li>
+            </ul>
           </div>
-          <button
-            (click)="onRecoverList(list.id)"
-            class="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-50 hover:bg-blue-100 text-blue-600 rounded transition-colors"
-            type="button"
-          >
-            <fa-icon [icon]="faRotateLeft" class="text-xs"></fa-icon>
-            Recover
-          </button>
-        </div>
-      </div>
+        </mat-expansion-panel>
+      </mat-accordion>
     </section>
   </div>
 </div>

@@ -127,6 +127,7 @@ export class BoardComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (updated) => {
           this.board = updated;
+          this.boardsCacheService.clearAll();
         },
       });
   }
@@ -140,18 +141,13 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   onArchived(): void {
     if (!this.board) return;
-    this.dialog
-      .open<void>(ArchivedModalComponent, {
-        data: {
-          boardId: this.board.id,
-        },
-      })
-      .closed.subscribe(() => {
-        // Reload board after recovery
-        if (this.board) {
-          this.loadBoard(this.board.id);
-        }
-      });
+
+    this.dialog.open<void>(ArchivedModalComponent, {
+      data: {
+        boardId: this.board.id,
+        onRecoverList: () => this.onRecoverArchivedList(),
+      },
+    });
   }
 
   onSearchClose(): void {
@@ -272,6 +268,14 @@ export class BoardComponent implements OnInit, OnDestroy {
     if (didArchive) {
       this.updateVisibleLists(this.board.id);
     }
+  }
+
+  private onRecoverArchivedList(): void {
+    if (!this.board) {
+      return;
+    }
+
+    this.updateVisibleLists(this.board.id);
   }
 
   toggleAddListForm(): void {

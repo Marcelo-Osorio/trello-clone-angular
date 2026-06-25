@@ -6,6 +6,7 @@ import { CdkAccordionModule } from '@angular/cdk/accordion';
 import { DialogModule } from '@angular/cdk/dialog';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { MatInputModule } from '@angular/material/input';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -66,6 +67,7 @@ import { ValidationPopupComponent } from './components/validation-popup/validati
     DialogModule,
     ScrollingModule,
     MatDatepickerModule,
+    MatExpansionModule,
     MatInputModule,
     MatNativeDateModule,
     MatCheckboxModule,

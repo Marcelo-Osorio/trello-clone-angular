@@ -1,4 +1,4 @@
-import { Component, Inject, Output, EventEmitter } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { DialogRef, DIALOG_DATA } from '@angular/cdk/dialog';
 import { faClose, faArchive, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
 
@@ -7,6 +7,7 @@ import { List } from '@models/list.model';
 
 interface ArchivedModalData {
   boardId: number;
+  onRecoverList?: () => void;
 }
 
 @Component({
@@ -15,8 +16,6 @@ interface ArchivedModalData {
   styleUrls: ['./archived-modal.component.scss'],
 })
 export class ArchivedModalComponent {
-  @Output() recovered = new EventEmitter<void>();
-
   faClose = faClose;
   faArchive = faArchive;
   faRotateLeft = faRotateLeft;
@@ -27,7 +26,7 @@ export class ArchivedModalComponent {
   constructor(
     private dialogRef: DialogRef<void>,
     private archivedService: ArchivedService,
-    @Inject(DIALOG_DATA) data: ArchivedModalData,
+    @Inject(DIALOG_DATA) private readonly data: ArchivedModalData,
   ) {
     this.boardId = data.boardId;
     this.loadArchived();
@@ -44,6 +43,11 @@ export class ArchivedModalComponent {
   onRecoverList(listId: number): void {
     this.archivedService.recoverList(this.boardId, listId);
     this.archivedLists = this.archivedLists.filter((l) => l.id !== listId);
-    this.recovered.emit();
+    this.data.onRecoverList?.();
+  }
+
+  onRecoverButtonClick(event: MouseEvent, listId: number): void {
+    event.stopPropagation();
+    this.onRecoverList(listId);
   }
 }
