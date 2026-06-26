@@ -55,14 +55,35 @@ import { CustomValidators } from '@utils/validators';
         display: block;
         height: 100%;
       }
+
+      .board-shell {
+        height: 100%;
+        background: transparent;
+      }
+
+      .search-drawer {
+        width: min(24rem, 92vw);
+        background: transparent;
+        box-shadow: -24px 0 64px rgba(15, 23, 42, 0.35);
+      }
+
+      .board-shell__content {
+        transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .board-shell__content--shifted {
+        transform: translateX(clamp(-88px, -8vw, -36px));
+      }
     `,
   ],
 })
 export class BoardComponent implements OnInit, OnDestroy {
   board: Board | null = null;
   lists: List[] = [];
+  filteredLists: List[] = [];
   loading = true;
   error: string | null = null;
+  isFiltering = false;
   searchOpen = false;
   showAddListForm = false;
   newListTitle = '';
@@ -72,6 +93,8 @@ export class BoardComponent implements OnInit, OnDestroy {
   private paramsSub: Subscription | null = null;
   private authSub: Subscription | null = null;
   private labelRenameSub: Subscription | null = null;
+  private searchResultsSub: Subscription | null = null;
+  private searchStateSub: Subscription | null = null;
   private readonly CONTROL_LABELS: Record<string, string> = {
     cardTitle: 'Title',
     textDescription: 'Description',
@@ -106,6 +129,16 @@ export class BoardComponent implements OnInit, OnDestroy {
     this.authSub = this.authService.user$.subscribe((user) => {
       this.currentUser = user;
     });
+    this.searchResultsSub = this.searchService.filteredVisibleLists$.subscribe(
+      (filteredLists) => {
+        this.filteredLists = filteredLists;
+      },
+    );
+    this.searchStateSub = this.searchService.isFiltering$.subscribe(
+      (isFiltering) => {
+        this.isFiltering = isFiltering;
+      },
+    );
     this.labelRenameSub = this.labelsService
       .getRenamedLabels$()
       .pipe(concatMap((event) => this.syncRenamedLabelAcrossCards(event)))
@@ -116,6 +149,8 @@ export class BoardComponent implements OnInit, OnDestroy {
     this.paramsSub?.unsubscribe();
     this.authSub?.unsubscribe();
     this.labelRenameSub?.unsubscribe();
+    this.searchResultsSub?.unsubscribe();
+    this.searchStateSub?.unsubscribe();
   }
 
   onBoardNameChange(newName: string): void {
@@ -134,9 +169,6 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   onSearchToggle(): void {
     this.searchOpen = !this.searchOpen;
-    if (!this.searchOpen) {
-      this.searchService.clearFilter();
-    }
   }
 
   onArchived(): void {
@@ -152,17 +184,10 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   onSearchClose(): void {
     this.searchOpen = false;
-    this.searchService.clearFilter();
   }
 
-  get filteredLists(): List[] {
-    if (!this.searchService.getActiveFilter()) {
-      return this.lists;
-    }
-    return this.lists.map((list) => ({
-      ...list,
-      cards: this.searchService.filterCards(list.cards || []),
-    }));
+  get displayedLists(): List[] {
+    return this.isFiltering ? this.filteredLists : this.lists;
   }
 
   get cardDropListIds(): string[] {
@@ -250,6 +275,7 @@ export class BoardComponent implements OnInit, OnDestroy {
             targetList.cards = [];
           }
           targetList.cards.push(newCard);
+          this.syncSearchVisibleLists();
         },
       });
   }
@@ -418,6 +444,7 @@ export class BoardComponent implements OnInit, OnDestroy {
         if (this.board) {
           this.archivedService.updateArchivedList(this.board.id, list);
         }
+        this.syncSearchVisibleLists();
         break;
       }
     }
@@ -766,6 +793,8 @@ export class BoardComponent implements OnInit, OnDestroy {
   private loadBoard(id: number): void {
     this.loading = true;
     this.error = null;
+    this.searchOpen = false;
+    this.searchService.clearCriteria();
     this.boardsService.getBoardById(id).subscribe({
       next: (board) => {
         this.recentBoardsService.pushBoard(board);
@@ -803,5 +832,10 @@ export class BoardComponent implements OnInit, OnDestroy {
     );
 
     this.lists = this.allLists.filter((list) => !archivedListIds.has(list.id));
+    this.syncSearchVisibleLists();
+  }
+
+  private syncSearchVisibleLists(): void {
+    this.searchService.setVisibleLists(this.lists);
   }
 }

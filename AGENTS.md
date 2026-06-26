@@ -55,7 +55,7 @@ To refresh the local file, run `postman_getCollection` via MCP and write the res
 - ESLint: `^8.33.0` with `@angular-eslint` v15.2.1
 - Karma / Jasmine for testing
 
-# Developer Rules
+## Developer Rules
 
 > When UI elements (inputs, modals, dropdowns) are rendered dynamically via conditional templates (`*ngIf`, `ng-template`):
 

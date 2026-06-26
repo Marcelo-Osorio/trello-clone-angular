@@ -1,128 +1,123 @@
-<div class="fixed top-0 right-0 h-full w-80 bg-white shadow-xl z-50 flex flex-col">
-  <!-- Header -->
-  <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-    <h2 class="text-sm font-semibold text-gray-800">Search & Filter</h2>
-    <button
-      (click)="onClose()"
-      class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 transition-colors"
-      type="button"
-      aria-label="Close search panel"
-    >
-      <fa-icon [icon]="faClose" class="text-gray-500 text-sm"></fa-icon>
-    </button>
-  </div>
-
-  <!-- Active filter indicator -->
-  <div *ngIf="activeFilter" class="px-4 py-2 bg-blue-50 border-b border-blue-100">
-    <div class="flex items-center gap-2">
-      <span class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
-        {{ activeFilterLabel }}
-        <button
-          (click)="onClearFilter()"
-          class="ml-1 hover:text-blue-900"
-          type="button"
-          aria-label="Clear filter"
-        >
-          <fa-icon [icon]="faClose" class="text-xs"></fa-icon>
-        </button>
-      </span>
-    </div>
-    <div *ngIf="resultCount >= 0" class="mt-1 text-xs text-gray-500">
-      {{ resultCount }} search result{{ resultCount !== 1 ? 's' : '' }}
-    </div>
-  </div>
-
-  <div class="flex-1 overflow-y-auto px-4 py-3 space-y-5">
-    <!-- Search term input -->
-    <div>
-      <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
-        <fa-icon [icon]="faMagnifyingGlass" class="mr-1 text-gray-400"></fa-icon>
-        Search
-      </label>
-      <input
-        type="text"
-        [(ngModel)]="searchTerm"
-        (keydown)="onSearchKeydown($event)"
-        placeholder="Search cards..."
-        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-      />
-    </div>
-
-    <!-- Label filter -->
-    <div>
-      <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
-        <fa-icon [icon]="faTag" class="mr-1 text-gray-400"></fa-icon>
-        Filter by Label
-      </label>
-      <div class="flex flex-wrap gap-2">
-        <button
-          *ngFor="let label of labelColors"
-          (click)="onLabelClick({  labelName: '' ,color: label.color})"
-          class="w-8 h-8 rounded-md {{ label.bgClass }} hover:ring-2 hover:ring-offset-1 hover:ring-gray-400 transition-all"
-          [attr.aria-label]="'Filter by ' + label.color + ' label'"
-          type="button"
-        ></button>
+<div class="flex h-full flex-col overflow-hidden bg-slate-950 text-slate-100">
+  <div class="border-b border-white/10 bg-[radial-gradient(circle_at_top_right,_rgba(56,189,248,0.22),_transparent_45%),linear-gradient(135deg,_rgba(15,23,42,1),_rgba(2,6,23,0.92))] px-5 py-5">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-200/80">Board search</p>
+        <h2 class="mt-2 text-lg font-semibold text-white">Refine what is visible</h2>
+        <p class="mt-1 text-sm text-slate-300">
+          Combine text and labels to narrow cards across the visible board lists.
+        </p>
       </div>
-    </div>
 
-    <!-- Member filter -->
-    <div class="relative">
-      <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
-        <fa-icon [icon]="faUser" class="mr-1 text-gray-400"></fa-icon>
-        Filter by Member
-      </label>
-      <input
-        type="text"
-        [(ngModel)]="memberSearchTerm"
-        (keydown)="onMemberKeydown($event)"
-        placeholder="Type @ to mention..."
-        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-      />
-      <div
-        *ngIf="showMemberPopup && board?.members?.length"
-        class="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto"
+      <button
+        (click)="onClose()"
+        class="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:border-white/20 hover:bg-white/10 hover:text-white"
+        type="button"
+        aria-label="Close search panel"
       >
-        <button
-          *ngFor="let member of board.members"
-          (click)="onMemberSelect(member.name)"
-          class="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
-          type="button"
-        >
-          <img
-            *ngIf="member.avatar"
-            [src]="member.avatar"
-            [alt]="member.name"
-            class="w-6 h-6 rounded-full"
-          />
-          <span>{{ member.name }}</span>
-        </button>
-      </div>
+        <fa-icon [icon]="faClose" class="text-sm"></fa-icon>
+      </button>
     </div>
+  </div>
 
-    <!-- Due date chips -->
-    <div *ngIf="allDueDates.length > 0">
-      <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
-        <fa-icon [icon]="faCalendarDay" class="mr-1 text-gray-400"></fa-icon>
-        Filter by Due Date
+  <div class="flex-1 space-y-6 overflow-y-auto px-5 py-5">
+    <section class="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-[0_24px_60px_rgba(15,23,42,0.28)] backdrop-blur-sm">
+      <label class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">
+        Search text
       </label>
-      <div class="flex flex-wrap gap-1.5">
+
+      <div class="mt-3 flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-900/80 px-3 py-3 transition focus-within:border-cyan-300/40 focus-within:bg-slate-900">
+        <fa-icon [icon]="faMagnifyingGlass" class="text-sm text-cyan-200/80"></fa-icon>
+        <input
+          #searchInput
+          type="text"
+          [ngModel]="searchDraft"
+          (ngModelChange)="onSearchDraftChange($event)"
+          (keydown)="onSearchKeydown($event)"
+          placeholder="Search cards, descriptions, and checklists"
+          class="w-full bg-transparent text-sm text-white placeholder:text-slate-500 focus:outline-none"
+        />
+      </div>
+
+      <p class="mt-3 text-xs leading-5 text-slate-400">
+        Enter applies immediately, and typing pauses trigger a delayed search update.
+      </p>
+    </section>
+
+    <section class="rounded-3xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur-sm">
+      <div class="flex items-center justify-between gap-3">
+        <label class="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">
+          <fa-icon [icon]="faTag" class="text-[10px] text-cyan-200/80"></fa-icon>
+          Labels
+        </label>
+
+        <span class="text-xs text-slate-400">{{ criteria.labels.length }} selected</span>
+      </div>
+
+      <div *ngIf="labels.length; else emptyLabels" class="mt-4 flex flex-wrap gap-2.5">
         <button
-          *ngFor="let date of visibleDueDates"
-          (click)="onDueDateClick(date)"
-          class="px-2.5 py-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
+          *ngFor="let label of labels; trackBy: trackByLabel"
+          (click)="onLabelToggle(label)"
           type="button"
+          class="inline-flex max-w-full items-center gap-2 rounded-full border px-3 py-2 text-left text-sm transition"
+          [ngClass]="isLabelSelected(label)
+            ? 'border-cyan-300/50 bg-cyan-400/10 text-white shadow-[0_0_0_1px_rgba(103,232,249,0.14)]'
+            : 'border-white/10 bg-white/5 text-slate-300 hover:border-white/20 hover:bg-white/10 hover:text-white'"
+          [attr.aria-pressed]="isLabelSelected(label)"
         >
-          {{ date }}
-        </button>
-        <button
-          *ngIf="hasMoreDueDates"
-          (click)="showAllDueDates()"
-          class="px-2.5 py-1 text-xs bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-full transition-colors font-medium"
-          type="button"
-        >
-          +{{ allDueDates.length - MAX_VISIBLE_DATES }} more
+          <span
+            class="h-3 w-3 shrink-0 rounded-full"
+            [ngClass]="labelBgMap[label.color]"
+          ></span>
+          <span class="truncate">{{ getLabelName(label) }}</span>
         </button>
       </div>
-    </div>
+
+      <ng-template #emptyLabels>
+        <p class="mt-4 rounded-2xl border border-dashed border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-slate-400">
+          No labels are available on this board yet.
+        </p>
+      </ng-template>
+    </section>
+
+    <section
+      *ngIf="hasFilters"
+      class="rounded-3xl border border-cyan-300/10 bg-cyan-400/[0.06] p-4 backdrop-blur-sm"
+    >
+      <div class="mb-3 flex items-center justify-between gap-3">
+        <h3 class="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-100/80">Active filters</h3>
+        <span class="text-xs text-slate-400">Remove any chip to update the board</span>
+      </div>
+
+      <mat-chip-set class="search-panel__chip-set" aria-label="Active search filters">
+        <mat-chip
+          *ngIf="criteria.text"
+          [removable]="true"
+          (removed)="removeTextFilter()"
+          class="!border !border-cyan-300/25 !bg-cyan-400/10 !text-cyan-50"
+        >
+          [search | {{ truncatedSearchChip }}]
+          <button matChipRemove type="button" aria-label="Remove text search filter">
+            <fa-icon [icon]="faClose" class="text-[10px]"></fa-icon>
+          </button>
+        </mat-chip>
+
+        <mat-chip
+          *ngFor="let label of criteria.labels; trackBy: trackByLabel"
+          [removable]="true"
+          (removed)="removeLabelFilter(label.color)"
+          class="!border !border-white/10 !bg-white/10 !text-white"
+        >
+          [label | {{ getLabelName(label) }}]
+          <button
+            matChipRemove
+            type="button"
+            [attr.aria-label]="'Remove label filter ' + getLabelName(label)"
+          >
+            <fa-icon [icon]="faClose" class="text-[10px]"></fa-icon>
+          </button>
+        </mat-chip>
+      </mat-chip-set>
+    </section>
   </div>
 </div>

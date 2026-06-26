@@ -1,110 +1,160 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject, combineLatest } from 'rxjs';
 
-import { Card, CardDescription, Label } from '@models/card.model';
+import { Card, Label, LabelColor } from '@models/card.model';
+import { List } from '@models/list.model';
+import { EMPTY_SEARCH_CRITERIA, SearchCriteria } from '@models/search.model';
 import { parseDescription } from '@utils/parse-description';
-
-export type FilterType = 'term' | 'label' | 'member' | 'dueDate';
-
-export interface ActiveFilter {
-  type: FilterType;
-  value: any;
-}
 
 @Injectable({
   providedIn: 'root',
 })
 export class SearchService {
-  private activeFilter: ActiveFilter | null = null;
+  private readonly criteriaSubject = new BehaviorSubject<SearchCriteria>({
+    ...EMPTY_SEARCH_CRITERIA,
+    labels: [],
+  });
+  private readonly visibleListsSubject = new BehaviorSubject<List[]>([]);
+  private readonly filteredVisibleListsSubject = new BehaviorSubject<List[]>([]);
+  private readonly isFilteringSubject = new BehaviorSubject<boolean>(false);
 
-  setFilter(type: FilterType, value: any): void {
-    this.activeFilter = { type, value };
+  readonly criteria$ = this.criteriaSubject.asObservable();
+  readonly filteredVisibleLists$ = this.filteredVisibleListsSubject.asObservable();
+  readonly isFiltering$ = this.isFilteringSubject.asObservable();
+
+  constructor() {
+    combineLatest([this.visibleListsSubject, this.criteriaSubject]).subscribe(
+      ([visibleLists, criteria]) => {
+        const isFiltering = this.hasActiveCriteria(criteria);
+
+        this.isFilteringSubject.next(isFiltering);
+        this.filteredVisibleListsSubject.next(
+          isFiltering
+            ? this.filterVisibleLists(visibleLists, criteria)
+            : visibleLists,
+        );
+      },
+    );
   }
 
-  clearFilter(): void {
-    this.activeFilter = null;
+  setVisibleLists(lists: List[]): void {
+    this.visibleListsSubject.next(lists);
   }
 
-  getActiveFilter(): ActiveFilter | null {
-    return this.activeFilter;
+  updateText(text: string): void {
+    this.patchCriteria({ text: text.trim() });
   }
 
-  filterCards(cards: Card[]): Card[] {
-    if (!this.activeFilter) {
-      return cards;
-    }
-
-    const { type, value } = this.activeFilter;
-
-    switch (type) {
-      case 'term':
-        return this.filterByTerm(cards, value as string);
-      case 'label':
-        return this.filterByLabel(cards, value as Label);
-      case 'member':
-        return this.filterByMember(cards, value as string);
-      case 'dueDate':
-        return this.filterByDueDate(cards, value as string);
-      default:
-        return cards;
-    }
+  clearText(): void {
+    this.patchCriteria({ text: '' });
   }
 
-  getAllDueDates(cards: Card[]): string[] {
-    const dateSet = new Set<string>();
-    for (const card of cards) {
-      const desc = parseDescription(card.description);
-      if (desc.dueDate) {
-        dateSet.add(desc.dueDate);
-      }
-    }
-    return Array.from(dateSet).sort();
+  toggleLabel(label: Label): void {
+    const labels = this.criteriaSubject.value.labels;
+    const nextLabels = this.hasLabel(labels, label.color)
+      ? labels.filter((currentLabel) => currentLabel.color !== label.color)
+      : [...labels, this.cloneLabel(label)];
+
+    this.patchCriteria({ labels: nextLabels });
   }
 
-  private filterByTerm(cards: Card[], term: string): Card[] {
-    const lower = term.toLowerCase();
-    return cards.filter((card) => {
-      if (card.title.toLowerCase().includes(lower)) {
-        return true;
-      }
-      const desc = parseDescription(card.description);
-      if (desc.textField.toLowerCase().includes(lower)) {
-        return true;
-      }
-      // Search in checklist items
-      for (const group of desc.checklist) {
-        for (const item of group.items) {
-          if (item.item.toLowerCase().includes(lower)) {
-            return true;
-          }
-        }
-      }
-      return false;
+  removeLabel(color: LabelColor): void {
+    this.patchCriteria({
+      labels: this.criteriaSubject.value.labels.filter(
+        (label) => label.color !== color,
+      ),
     });
   }
 
-  private filterByLabel(cards: Card[], label: Label): Card[] {
-    return cards.filter((card) => {
-      const desc = parseDescription(card.description);
-      return desc.labels.some((l) => {
-        if (label.color && l.color === label.color) return true;
-        if (label.labelName && l.labelName.toLowerCase() === label.labelName.toLowerCase()) return true;
-        return false;
-      });
+  clearCriteria(): void {
+    this.criteriaSubject.next({ ...EMPTY_SEARCH_CRITERIA, labels: [] });
+  }
+
+  getCriteriaSnapshot(): SearchCriteria {
+    const { text, labels } = this.criteriaSubject.value;
+
+    return {
+      text,
+      labels: labels.map((label) => this.cloneLabel(label)),
+    };
+  }
+
+  getIsFilteringSnapshot(): boolean {
+    return this.isFilteringSubject.value;
+  }
+
+  private patchCriteria(criteriaPatch: Partial<SearchCriteria>): void {
+    this.criteriaSubject.next({
+      ...this.criteriaSubject.value,
+      ...criteriaPatch,
     });
   }
 
-  private filterByMember(cards: Card[], memberName: string): Card[] {
-    const lower = memberName.toLowerCase();
-    return cards.filter((card) => {
-      const desc = parseDescription(card.description);
-      return desc.textField.toLowerCase().includes(`@${lower}`);
-    });
+  private hasActiveCriteria(criteria: SearchCriteria): boolean {
+    return criteria.text.length > 0 || criteria.labels.length > 0;
   }
 
-  private filterByDueDate(cards: Card[], date: string): Card[] {
-    return cards.filter((card) => {
-      const desc = parseDescription(card.description);
-      return desc.dueDate === date;
-    });
+  private filterVisibleLists(
+    visibleLists: List[],
+    criteria: SearchCriteria,
+  ): List[] {
+    return visibleLists
+      .map((list) => {
+        const matchedCards = (list.cards || []).filter((card) =>
+          this.matchesCard(card, criteria),
+        );
+
+        return {
+          ...list,
+          cards: matchedCards,
+        };
+      })
+      .filter((list) => (list.cards || []).length > 0);
+  }
+
+  private matchesCard(card: Card, criteria: SearchCriteria): boolean {
+    const matchesText =
+      !criteria.text || this.matchesTextCriteria(card, criteria.text);
+    const matchesLabels =
+      criteria.labels.length === 0 ||
+      this.matchesLabelCriteria(card, criteria.labels);
+
+    return matchesText && matchesLabels;
+  }
+
+  private matchesTextCriteria(card: Card, searchText: string): boolean {
+    const lowerSearchText = searchText.toLowerCase();
+    const description = parseDescription(card.description);
+
+    return (
+      card.title.toLowerCase().includes(lowerSearchText) ||
+      description.textField.toLowerCase().includes(lowerSearchText) ||
+      description.checklist.some(
+        (group) =>
+          group.groupName.toLowerCase().includes(lowerSearchText) ||
+          group.items.some((item) =>
+            item.item.toLowerCase().includes(lowerSearchText),
+          ),
+      )
+    );
+  }
+
+  private matchesLabelCriteria(card: Card, selectedLabels: Label[]): boolean {
+    const cardLabels = parseDescription(card.description).labels;
+
+    return selectedLabels.some((selectedLabel) =>
+      cardLabels.some((cardLabel) => cardLabel.color === selectedLabel.color),
+    );
+  }
+
+  private hasLabel(labels: Label[], color: LabelColor): boolean {
+    return labels.some((label) => label.color === color);
+  }
+
+  private cloneLabel(label: Label): Label {
+    return {
+      color: label.color,
+      labelName: label.labelName,
+    };
   }
 }

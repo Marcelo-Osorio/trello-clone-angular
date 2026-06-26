@@ -17,6 +17,8 @@ import { InviteDialogComponent } from '../invite-dialog/invite-dialog.component'
 })
 export class BoardNavbarComponent {
   @Input() board!: Board;
+  @Input() searchPanelOpen = false;
+  @Input() hasActiveSearch = false;
   @Output() boardNameChange = new EventEmitter<string>();
   @Output() searchToggle = new EventEmitter<void>();
   @Output() archived = new EventEmitter<void>();
@@ -28,7 +30,6 @@ export class BoardNavbarComponent {
 
   isEditing = false;
   editName = '';
-  searchOpen = false;
 
   constructor(private dialog: Dialog) {}
 
@@ -68,7 +69,6 @@ export class BoardNavbarComponent {
   }
 
   onSearchToggle(): void {
-    this.searchOpen = !this.searchOpen;
     this.searchToggle.emit();
   }
 }

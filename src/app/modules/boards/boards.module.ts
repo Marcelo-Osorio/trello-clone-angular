@@ -5,11 +5,13 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { CdkAccordionModule } from '@angular/cdk/accordion';
 import { DialogModule } from '@angular/cdk/dialog';
 import { ScrollingModule } from '@angular/cdk/scrolling';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatInputModule } from '@angular/material/input';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSidenavModule } from '@angular/material/sidenav';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { RouterModule } from '@angular/router';
 
@@ -66,11 +68,13 @@ import { ValidationPopupComponent } from './components/validation-popup/validati
     CdkAccordionModule,
     DialogModule,
     ScrollingModule,
+    MatChipsModule,
     MatDatepickerModule,
     MatExpansionModule,
     MatInputModule,
     MatNativeDateModule,
     MatCheckboxModule,
+    MatSidenavModule,
     FontAwesomeModule,
     ReactiveFormsModule,
     RouterModule,
