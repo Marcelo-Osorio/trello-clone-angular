@@ -2,13 +2,3 @@
   display: block;
   height: 100%;
 }
-
-:host ::ng-deep .search-panel__chip-set .mdc-evolution-chip-set__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-:host ::ng-deep .search-panel__chip-set .mdc-evolution-chip__action {
-  color: inherit;
-}

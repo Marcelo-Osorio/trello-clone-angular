@@ -27,7 +27,6 @@
         <app-board-navbar
           [board]="board"
           [searchPanelOpen]="searchOpen"
-          [hasActiveSearch]="isFiltering"
           (boardNameChange)="onBoardNameChange($event)"
           (searchToggle)="onSearchToggle()"
           (archived)="onArchived()"
@@ -39,20 +38,20 @@
             cdkDropList
             cdkDropListOrientation="horizontal"
             [cdkDropListData]="lists"
-            [cdkDropListDisabled]="isFiltering"
+            [cdkDropListDisabled]="searchOpen"
             (cdkDropListDropped)="onListDrop($event)"
           >
             <div
               *ngFor="let list of displayedLists; let i = index"
               cdkDrag
-              [cdkDragDisabled]="isFiltering"
+              [cdkDragDisabled]="searchOpen"
               class="h-full"
             >
               <app-list
                 [list]="list"
                 [listIndex]="i"
                 [connectedDropListIds]="cardDropListIds"
-                [interactionDisabled]="isFiltering"
+                [interactionDisabled]="searchOpen"
                 (cardDropped)="onCardDrop($event, list)"
                 (addCard)="onAddCard($event)"
                 (archiveList)="onArchiveList($event)"
@@ -61,7 +60,7 @@
             </div>
           </div>
 
-          <div class="shrink-0" *ngIf="!isFiltering">
+          <div class="shrink-0" *ngIf="!searchOpen">
             <ng-container *ngIf="!showAddListForm; else addListForm">
               <button
                 (click)="toggleAddListForm()"

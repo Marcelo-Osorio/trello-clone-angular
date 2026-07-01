@@ -34,6 +34,66 @@
     />
   </ng-template>
 
+  <div class="relative" *ngIf="hasActiveFilters" cdkOverlayOrigin #filtersOrigin="cdkOverlayOrigin">
+    <button
+      type="button"
+      class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-white/20"
+      (click)="toggleFiltersOverlay()"
+      [attr.aria-expanded]="filtersOverlayOpen"
+      aria-label="See active board filters"
+    >
+      <fa-icon [icon]="faLayerGroup" class="text-xs"></fa-icon>
+      <span>Active filters</span>
+      <span class="rounded-full bg-white/20 px-2 py-0.5 text-xs">{{ activeFilterCount }}</span>
+    </button>
+
+    <ng-template
+      cdkConnectedOverlay
+      [cdkConnectedOverlayOrigin]="filtersOrigin"
+      [cdkConnectedOverlayOpen]="filtersOverlayOpen"
+      [cdkConnectedOverlayHasBackdrop]="true"
+      cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+      [cdkConnectedOverlayPositions]="[
+        {
+          originX: 'start',
+          originY: 'bottom',
+          overlayX: 'start',
+          overlayY: 'top',
+          offsetY: 12
+        }
+      ]"
+      (backdropClick)="closeFiltersOverlay()"
+      (overlayOutsideClick)="closeFiltersOverlay()"
+      (detach)="closeFiltersOverlay()"
+    >
+      <div class="mt-2 w-[min(30rem,calc(100vw-2rem))] rounded-3xl border border-white/15 bg-slate-950/95 bg-gray-200 p-4 text-gray-700 shadow-[0_24px_80px_rgba(2,6,23,0.55)]">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600">Board filters</p>
+            <p class="mt-1 text-sm text-slate">Remove any chip and the search panel will update automatically.</p>
+          </div>
+
+          <button
+            type="button"
+            class="text-xs font-medium text-cyan-600 transition hover:text-orange"
+            (click)="clearAllFilters()"
+          >
+            Clear all
+          </button>
+        </div>
+
+        <div class="mt-4 flex flex-wrap gap-2.5">
+          <app-active-filter-chip
+            *ngFor="let chip of activeChips"
+            [chip]="chip"
+            [removable]="true"
+            (remove)="removeChip(chip)"
+          ></app-active-filter-chip>
+        </div>
+      </div>
+    </ng-template>
+  </div>
+
   <span class="flex-1"></span>
 
   <!-- Invite button -->
@@ -61,7 +121,7 @@
     (click)="onSearchToggle()"
     class="flex items-center justify-center w-8 h-8 rounded hover:bg-white/20 transition-colors"
     [ngClass]="{
-      'bg-white/30 ring-1 ring-white/30': searchPanelOpen || hasActiveSearch
+      'bg-white/30 ring-1 ring-white/30': searchPanelOpen || hasActiveFilters
     }"
     type="button"
     aria-label="Toggle search"

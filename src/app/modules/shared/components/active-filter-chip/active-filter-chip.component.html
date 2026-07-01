@@ -1,0 +1,17 @@
+<div
+  class="inline-flex max-w-full items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium shadow-[0_10px_30px_rgba(15,23,42,0.2)]"
+  [ngClass]="colorClasses"
+  [attr.title]="label"
+>
+  <span class="truncate">{{ label }}</span>
+
+  <button
+    *ngIf="removable"
+    type="button"
+    class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-black/15 text-white transition hover:bg-black/25"
+    (click)="onRemove($event)"
+    [attr.aria-label]="'Remove ' + label"
+  >
+    <fa-icon [icon]="faClose" class="text-[10px]"></fa-icon>
+  </button>
+</div>

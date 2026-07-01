@@ -3,7 +3,11 @@ import { BehaviorSubject, combineLatest } from 'rxjs';
 
 import { Card, Label, LabelColor } from '@models/card.model';
 import { List } from '@models/list.model';
-import { EMPTY_SEARCH_CRITERIA, SearchCriteria } from '@models/search.model';
+import {
+  ActiveFilterChip,
+  EMPTY_SEARCH_CRITERIA,
+  SearchCriteria,
+} from '@models/search.model';
 import { parseDescription } from '@utils/parse-description';
 
 @Injectable({
@@ -16,18 +20,25 @@ export class SearchService {
   });
   private readonly visibleListsSubject = new BehaviorSubject<List[]>([]);
   private readonly filteredVisibleListsSubject = new BehaviorSubject<List[]>([]);
+  private readonly activeChipsSubject = new BehaviorSubject<ActiveFilterChip[]>([]);
+  private readonly activeFilterCountSubject = new BehaviorSubject<number>(0);
   private readonly isFilteringSubject = new BehaviorSubject<boolean>(false);
 
   readonly criteria$ = this.criteriaSubject.asObservable();
   readonly filteredVisibleLists$ = this.filteredVisibleListsSubject.asObservable();
+  readonly activeChips$ = this.activeChipsSubject.asObservable();
+  readonly activeFilterCount$ = this.activeFilterCountSubject.asObservable();
   readonly isFiltering$ = this.isFilteringSubject.asObservable();
 
   constructor() {
     combineLatest([this.visibleListsSubject, this.criteriaSubject]).subscribe(
       ([visibleLists, criteria]) => {
         const isFiltering = this.hasActiveCriteria(criteria);
+        const activeChips = this.buildActiveChips(criteria);
 
         this.isFilteringSubject.next(isFiltering);
+        this.activeChipsSubject.next(activeChips);
+        this.activeFilterCountSubject.next(activeChips.length);
         this.filteredVisibleListsSubject.next(
           isFiltering
             ? this.filterVisibleLists(visibleLists, criteria)
@@ -66,8 +77,23 @@ export class SearchService {
     });
   }
 
+  removeChip(chip: ActiveFilterChip): void {
+    if (chip.type === 'search') {
+      this.clearText();
+      return;
+    }
+
+    if (chip.color) {
+      this.removeLabel(chip.color);
+    }
+  }
+
   clearCriteria(): void {
     this.criteriaSubject.next({ ...EMPTY_SEARCH_CRITERIA, labels: [] });
+  }
+
+  clearAllFilters(): void {
+    this.clearCriteria();
   }
 
   getCriteriaSnapshot(): SearchCriteria {
@@ -92,6 +118,29 @@ export class SearchService {
 
   private hasActiveCriteria(criteria: SearchCriteria): boolean {
     return criteria.text.length > 0 || criteria.labels.length > 0;
+  }
+
+  private buildActiveChips(criteria: SearchCriteria): ActiveFilterChip[] {
+    const chips: ActiveFilterChip[] = [];
+
+    if (criteria.text) {
+      chips.push({
+        id: 'search-text',
+        type: 'search',
+        text: criteria.text,
+      });
+    }
+
+    criteria.labels.forEach((label) => {
+      chips.push({
+        id: `label-${label.color}`,
+        type: 'label',
+        text: label.labelName?.trim() || label.color,
+        color: label.color,
+      });
+    });
+
+    return chips;
   }
 
   private filterVisibleLists(

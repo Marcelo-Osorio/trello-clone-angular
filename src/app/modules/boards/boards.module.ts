@@ -4,8 +4,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { CdkAccordionModule } from '@angular/cdk/accordion';
 import { DialogModule } from '@angular/cdk/dialog';
+import { OverlayModule } from '@angular/cdk/overlay';
 import { ScrollingModule } from '@angular/cdk/scrolling';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatInputModule } from '@angular/material/input';
@@ -67,8 +67,8 @@ import { ValidationPopupComponent } from './components/validation-popup/validati
     DragDropModule,
     CdkAccordionModule,
     DialogModule,
+    OverlayModule,
     ScrollingModule,
-    MatChipsModule,
     MatDatepickerModule,
     MatExpansionModule,
     MatInputModule,

@@ -13,7 +13,11 @@ import { Subject, Subscription, debounceTime, distinctUntilChanged } from 'rxjs'
 import { faClose, faMagnifyingGlass, faTag } from '@fortawesome/free-solid-svg-icons';
 
 import { Label, LabelColor } from '@models/card.model';
-import { EMPTY_SEARCH_CRITERIA, SearchCriteria } from '@models/search.model';
+import {
+  ActiveFilterChip,
+  EMPTY_SEARCH_CRITERIA,
+  SearchCriteria,
+} from '@models/search.model';
 import { LabelsService } from '@services/labels.service';
 import { SearchService } from '@services/search.service';
 
@@ -43,10 +47,10 @@ export class SearchPanelComponent implements OnChanges, OnDestroy {
   faTag = faTag;
 
   searchDraft = '';
+  activeChips: ActiveFilterChip[] = [];
   labels: Label[] = [];
   criteria: SearchCriteria = { ...EMPTY_SEARCH_CRITERIA, labels: [] };
   readonly labelBgMap = LABEL_BG_MAP;
-  readonly maxSearchChipLength = 28;
 
   private readonly searchTermChanges = new Subject<string>();
   private readonly subscription = new Subscription();
@@ -61,6 +65,12 @@ export class SearchPanelComponent implements OnChanges, OnDestroy {
           (left, right) =>
             LABEL_ORDER.indexOf(left.color) - LABEL_ORDER.indexOf(right.color),
         );
+      }),
+    );
+
+    this.subscription.add(
+      this.searchService.activeChips$.subscribe((chips) => {
+        this.activeChips = chips.map((chip) => ({ ...chip }));
       }),
     );
 
@@ -94,15 +104,7 @@ export class SearchPanelComponent implements OnChanges, OnDestroy {
   }
 
   get hasFilters(): boolean {
-    return this.criteria.text.length > 0 || this.criteria.labels.length > 0;
-  }
-
-  get truncatedSearchChip(): string {
-    if (this.criteria.text.length <= this.maxSearchChipLength) {
-      return this.criteria.text;
-    }
-
-    return `${this.criteria.text.slice(0, this.maxSearchChipLength - 3).trimEnd()}...`;
+    return this.activeChips.length > 0;
   }
 
   onClose(): void {
@@ -127,12 +129,8 @@ export class SearchPanelComponent implements OnChanges, OnDestroy {
     this.searchService.toggleLabel(label);
   }
 
-  removeTextFilter(): void {
-    this.searchService.clearText();
-  }
-
-  removeLabelFilter(color: LabelColor): void {
-    this.searchService.removeLabel(color);
+  removeChip(chip: ActiveFilterChip): void {
+    this.searchService.removeChip(chip);
   }
 
   isLabelSelected(label: Label): boolean {
@@ -147,6 +145,10 @@ export class SearchPanelComponent implements OnChanges, OnDestroy {
 
   trackByLabel(_: number, label: Label): LabelColor {
     return label.color;
+  }
+
+  trackByChip(_: number, chip: ActiveFilterChip): string {
+    return chip.id;
   }
 
   private focusSearchInput(): void {

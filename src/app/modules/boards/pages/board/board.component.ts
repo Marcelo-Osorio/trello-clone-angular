@@ -74,6 +74,10 @@ import { CustomValidators } from '@utils/validators';
       .board-shell__content--shifted {
         transform: translateX(clamp(-88px, -8vw, -36px));
       }
+
+      .cdk-drag-placeholder {
+        opacity: 0 !important;
+      }
     `,
   ],
 })
@@ -285,12 +289,17 @@ export class BoardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const currentList = this.allLists.find((candidate) => candidate.id === list.id);
+    const currentList = this.allLists.find(
+      (candidate) => candidate.id === list.id,
+    );
     if (!currentList) {
       return;
     }
 
-    const didArchive = this.archivedService.archiveList(this.board.id, currentList);
+    const didArchive = this.archivedService.archiveList(
+      this.board.id,
+      currentList,
+    );
     if (didArchive) {
       this.updateVisibleLists(this.board.id);
     }
